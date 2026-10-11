@@ -1,0 +1,114 @@
+
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>СтройКонтроль</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#f1f4f8;font-family:Arial,sans-serif;color:#182638}
+header{background:#173b69;color:white;padding:25px 18px}
+h1{margin:0;font-size:26px}
+header p{margin-bottom:0}
+main{max-width:800px;margin:auto;padding:16px}
+.card{background:white;border-radius:14px;padding:18px;margin-bottom:16px;box-shadow:0 2px 8px #0001}
+h2{margin-top:0;font-size:20px}
+input,select,button{width:100%;padding:13px;margin:7px 0;border-radius:9px;font-size:16px}
+input,select{border:1px solid #cbd3dd;background:white}
+button{background:#1766bd;border:0;color:white;font-weight:bold}
+.object{border-top:1px solid #ddd;padding:15px 0}
+.object strong{font-size:18px}
+.object p{margin:8px 0}
+small{color:#637084}
+.delete{background:#b63c3c}
+.empty{color:#667}
+</style>
+</head>
+<body>
+<header>
+<h1>🏗 СтройКонтроль</h1>
+<p>Управление строительными объектами</p>
+</header>
+<main>
+<section class="card">
+<h2>Мои объекты</h2>
+<div id="objects"></div>
+</section>
+<section class="card">
+<h2>Добавить объект</h2>
+<input id="name" placeholder="Название объекта">
+<input id="address" placeholder="Адрес объекта">
+<label>Срок завершения</label>
+<input id="deadline" type="date">
+<select id="status">
+<option>Не начат</option>
+<option>В работе</option>
+<option>Приостановлен</option>
+<option>Завершён</option>
+</select>
+<button onclick="addObject()">Добавить объект</button>
+</section>
+</main>
+<script>
+const key="stroykontrol_objects";
+let objects=[];
+try{
+objects=JSON.parse(localStorage.getItem(key)||"[]");
+if(!Array.isArray(objects))objects=[];
+}catch(e){objects=[];}
+function save(){
+localStorage.setItem(key,JSON.stringify(objects));
+render();
+}
+function addObject(){
+const name=document.getElementById("name").value.trim();
+if(!name){
+alert("Введите название объекта");
+return;
+}
+objects.push({
+id:Date.now(),
+name:name,
+address:document.getElementById("address").value,
+deadline:document.getElementById("deadline").value,
+status:document.getElementById("status").value
+});
+save();
+document.getElementById("name").value="";
+document.getElementById("address").value="";
+}
+function removeObject(id){
+if(confirm("Удалить объект?")){
+objects=objects.filter(x=>x.id!==id);
+save();
+}
+}
+function render(){
+const root=document.getElementById("objects");
+root.replaceChildren();
+if(objects.length===0){
+root.textContent="Объекты пока не добавлены";
+return;
+}
+objects.forEach(x=>{
+const div=document.createElement("div");
+div.className="object";
+const title=document.createElement("strong");
+title.textContent=x.name;
+const info=document.createElement("p");
+info.textContent=(x.address||"Адрес не указан")+" — "+x.status;
+const date=document.createElement("small");
+date.textContent="Срок: "+(x.deadline||"не указан");
+const btn=document.createElement("button");
+btn.className="delete";
+btn.textContent="Удалить объект";
+btn.onclick=()=>removeObject(x.id);
+div.append(title,info,date,btn);
+root.append(div);
+});
+}
+render();
+</script>
+</body>
+</html>
