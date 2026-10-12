@@ -4,7 +4,7 @@
 <body><header><h1>🏗️ СтройКонтроль</h1>Управление строительными объектами</header><main>
 <section id="login" class="card"><h2>Вход для сотрудников</h2><input id="email" type="email" placeholder="Рабочая почта" autocomplete="email"><input id="password" type="password" placeholder="Пароль" autocomplete="current-password"><button id="signIn" disabled>Войти</button><button id="forgot" type="button" disabled>Забыл пароль</button><p class="muted">Войдите своей рабочей почтой и паролем СтройКонтроля. Если забыли пароль, восстановите его по почте.</p><p id="loginMsg" class="error" role="status" aria-live="polite">Подключение...</p><button id="retry" class="hidden" type="button">Повторить подключение</button></section>
 <section id="recovery" class="card hidden"><h2>Новый пароль</h2><p id="recoveryInfo" class="muted">Проверяем ссылку восстановления...</p><label for="newPassword">Новый пароль, минимум 8 символов</label><input id="newPassword" type="password" autocomplete="new-password"><label for="repeatPassword">Повторите новый пароль</label><input id="repeatPassword" type="password" autocomplete="new-password"><button id="savePassword" disabled>Сохранить пароль</button><p id="recoveryMsg" class="error" role="status" aria-live="polite"></p><button id="backToLogin" type="button">Вернуться ко входу</button></section>
-<div id="app" class="hidden"><section class="card"><p id="who" class="muted"></p><button id="signOut">Выйти</button></section><section class="card"><h2>Мои объекты</h2><button id="reload" type="button">Обновить список</button><div id="objects">Загрузка...</div><p id="listMsg" class="error"></p></section><section class="card"><h2>Добавить объект</h2><input id="name" placeholder="Название объекта"><input id="address" placeholder="Адрес объекта"><label for="deadline">Срок завершения</label><input id="deadline" type="date"><select id="status"><option>Не начат</option><option>В работе</option><option>Приостановлен</option><option>Завершён</option></select><button id="add">Добавить объект</button><p id="addMsg" class="error"></p></section></div>
+<div id="app" class="hidden"><section class="card"><p id="who" class="muted"></p><button id="signOut">Выйти</button></section><section class="card"><h2>Мои объекты</h2><button id="reload" type="button">Обновить список</button><div id="objects">Загрузка...</div><p id="listMsg" class="error"></p></section><section id="objectForm" class="card"><h2 id="formTitle">Добавить объект</h2><label for="name">Название объекта</label><input id="name" placeholder="Название объекта"><label for="address">Адрес объекта</label><input id="address" placeholder="Адрес объекта"><label for="responsible">Ответственный</label><input id="responsible" placeholder="ФИО ответственного"><label for="deadline">Срок завершения</label><input id="deadline" type="date"><label for="status">Статус</label><select id="status"><option>Не начат</option><option>В работе</option><option>Приостановлен</option><option>Завершён</option></select><button id="add">Добавить объект</button><button id="cancelEdit" type="button" class="hidden">Отменить редактирование</button><p id="addMsg" class="error"></p></section></div>
 </main><noscript>Для работы приложения включите JavaScript в браузере.</noscript><script type="module">
 const $=id=>document.getElementById(id);
 function message(id,text){$(id).textContent=text||''}
@@ -18,6 +18,7 @@ function errorText(e){
   return e?.message||'Не удалось связаться с сервером. Проверьте интернет и повторите попытку.';
 }
 let supabase=null, currentUser=null, accessAllowed=false, sessionVersion=0, listVersion=0;
+let editingId=null;
 const initialParams=new URLSearchParams(location.search);
 const initialHash=new URLSearchParams(location.hash.slice(1));
 let recovering=initialParams.get('recovery')==='1'||initialHash.get('type')==='recovery';
@@ -61,7 +62,27 @@ $('savePassword').onclick=async()=>{
     message('loginMsg','Пароль сохранён.');await showSession();
   }catch(e){message('recoveryMsg','Ошибка сохранения пароля: '+errorText(e))}finally{$('savePassword').disabled=false}
 };
+function resetObjectForm(){
+  editingId=null;
+  for(const id of ['name','address','responsible','deadline'])$(id).value='';
+  $('status').value='Не начат';$('formTitle').textContent='Добавить объект';
+  $('add').textContent='Добавить объект';$('cancelEdit').classList.add('hidden');message('addMsg','');
+}
+function editObject(o){
+  if(!accessAllowed||$('add').disabled)return;
+  editingId=o.id;
+  for(const id of ['name','address','responsible','deadline'])$(id).value=o[id]||'';
+  const status=o.status||'Не начат';
+  if(!Array.from($('status').options).some(option=>option.value===status)){
+    const option=document.createElement('option');option.value=status;option.textContent=status;$('status').append(option);
+  }
+  $('status').value=status;$('formTitle').textContent='Редактировать объект';
+  $('add').textContent='Сохранить изменения';$('cancelEdit').classList.remove('hidden');message('addMsg','');
+  $('objectForm').scrollIntoView({behavior:'smooth',block:'start'});$('name').focus({preventScroll:true});
+}
+$('cancelEdit').onclick=()=>{if(!$('add').disabled)resetObjectForm()};
 function hideApp(){
+  resetObjectForm();
   accessAllowed=false; listVersion++;
   $('login').classList.remove('hidden'); $('app').classList.add('hidden');
   $('objects').replaceChildren(); $('who').textContent='';
@@ -71,7 +92,7 @@ async function refresh(){
   const version=++listVersion;
   message('listMsg',''); $('objects').textContent='Загрузка...';
   try{
-    const {data,error}=await supabase.from('objects').select('id,name,address,deadline,status').order('id',{ascending:false});
+    const {data,error}=await supabase.from('objects').select('id,name,address,deadline,status,responsible').order('id',{ascending:false});
     if(error) throw error;
     if(version!==listVersion||!accessAllowed) return;
     $('objects').replaceChildren();
@@ -81,6 +102,8 @@ async function refresh(){
       const title=document.createElement('h3'); title.textContent=o.name||'Без названия';
       const details=document.createElement('p'); details.textContent=[o.address,o.status].filter(Boolean).join(' — ');
       const date=document.createElement('p'); date.className='muted'; date.textContent=o.deadline?'Срок: '+o.deadline:'Срок не указан';
+      const responsible=document.createElement('p');responsible.textContent='Ответственный: '+(o.responsible||'не назначен');
+      const edit=document.createElement('button');edit.textContent='Редактировать';edit.onclick=()=>editObject(o);
       const del=document.createElement('button'); del.className='danger'; del.textContent='Удалить объект';
       del.onclick=async()=>{
         if(!accessAllowed||!confirm('Удалить объект «'+o.name+'»?'))return;
@@ -89,10 +112,11 @@ async function refresh(){
           const {data:deleted,error}=await supabase.from('objects').delete().eq('id',o.id).select('id');
           if(error)throw error;
           if(!deleted?.length)throw new Error('Объект не удалён: нет прав либо он уже удалён. Обновите список.');
+          if(editingId===o.id)resetObjectForm();
           await refresh();
         }catch(e){message('listMsg','Ошибка удаления: '+errorText(e))}finally{del.disabled=false}
       };
-      wrap.append(title,details,date,del); $('objects').append(wrap);
+      wrap.append(title,details,date,responsible,edit,del); $('objects').append(wrap);
     }
   }catch(e){
     if(version!==listVersion) return;
@@ -136,16 +160,22 @@ $('signOut').onclick=async()=>{
 };
 $('reload').onclick=refresh;
 $('add').onclick=async()=>{
-  if(!accessAllowed)return;
+  if(!accessAllowed||$('add').disabled)return;
   message('addMsg','');const name=$('name').value.trim();
   if(!name){message('addMsg','Введите название объекта');return}
-  $('add').disabled=true;
+  const id=editingId,userId=currentUser.id;
+  const payload={name,address:$('address').value.trim()||null,responsible:$('responsible').value.trim()||null,deadline:$('deadline').value||null,status:$('status').value};
+  const fields=['add','cancelEdit','name','address','responsible','deadline','status'];
+  for(const field of fields)$(field).disabled=true;
   try{
-    const {data,error}=await supabase.from('objects').insert({name,address:$('address').value.trim()||null,deadline:$('deadline').value||null,status:$('status').value}).select('id');
+    const query=id===null?supabase.from('objects').insert(payload):supabase.from('objects').update(payload).eq('id',id);
+    const {data,error}=await query.select('id');
     if(error)throw error;
-    if(!data?.length)throw new Error('Сервер не подтвердил сохранение объекта.');
-    $('name').value='';$('address').value='';$('deadline').value='';await refresh();
-  }catch(e){message('addMsg','Ошибка сохранения: '+errorText(e))}finally{$('add').disabled=false}
+    if(!data?.length)throw new Error(id===null?'Сервер не подтвердил сохранение объекта.':'Изменения не сохранены: объект удалён или нет права редактирования.');
+    if(!accessAllowed||currentUser?.id!==userId)return;
+    resetObjectForm();await refresh();
+  }catch(e){if(accessAllowed&&currentUser?.id===userId)message('addMsg','Ошибка сохранения: '+errorText(e))}
+  finally{for(const field of fields)$(field).disabled=false}
 };
 $('retry').onclick=()=>location.reload();
 try{

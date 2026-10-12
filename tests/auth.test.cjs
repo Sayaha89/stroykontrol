@@ -7,12 +7,15 @@ const source = html.match(/<script type="module">([\s\S]*?)<\/script>/)[1];
 class Element {
   constructor(id, hidden = false) {
     this.id = id; this.value = ''; this.textContent = ''; this.children = []; this.disabled = false;
+    this.options = ['Не начат','В работе','Приостановлен','Завершён'].map(value => ({value}));
     this.classes = new Set(hidden ? ['hidden'] : []);
     this.classList = {add: v => this.classes.add(v), remove: v => this.classes.delete(v), contains: v => this.classes.has(v)};
   }
   replaceChildren() { this.children = []; this.textContent = ''; }
   append(...items) { this.children.push(...items); }
   addEventListener() {}
+  scrollIntoView() {}
+  focus() {}
   checkValidity() { return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(this.value); }
   click() { return this.disabled ? undefined : this.onclick?.(); }
 }
@@ -40,10 +43,13 @@ async function scenario(mode) {
         select() { return query; }, order() { return query; }, eq(k, v) { id = v; return query; },
         maybeSingle: async () => ({data: mode === 'denied' ? null : {user_id: user.id}, error: mode === 'access-error' ? {code: '42501'} : null}),
         insert(v) { operation = 'insert'; value = v; return query; },
+        update(v) { operation = 'update'; value = v; return query; },
         delete() { operation = 'delete'; return query; },
         then(resolve, reject) {
           if (operation === 'insert' && mode === 'save-error') return Promise.resolve({data: null, error: {code: '42501'}}).then(resolve, reject);
+          if (operation === 'update' && mode === 'update-error') return Promise.resolve({data: null, error: {code: '42501'}}).then(resolve, reject);
           let data = rows;
+          if (operation === 'update') { data = mode === 'update-denied' ? [] : rows.filter(row => row.id === id).map(row => {Object.assign(row, value); return {id: row.id};}); }
           if (operation === 'insert') { rows.push({id: 1, ...value}); data = [{id: 1}]; }
           if (operation === 'delete') { data = mode === 'delete-denied' ? [] : rows.filter(row => row.id === id); if (data.length) rows = rows.filter(row => row.id !== id); }
           return Promise.resolve({data, error: null}).then(resolve, reject);
@@ -77,16 +83,32 @@ async function scenario(mode) {
   el.password.value = 'test-password'; await el.signIn.click();
   if (['access-error', 'denied'].includes(mode)) { assert(el.app.classList.contains('hidden')); assert(el.loginMsg.textContent.includes('доступ')); return; }
   assert(!el.app.classList.contains('hidden'));
-  el.name.value = '<script>alert(1)</script>'; await el.add.click();
+  el.name.value = '<script>alert(1)</script>'; el.responsible.value = 'Иванов Иван'; await el.add.click();
   if (mode === 'save-error') { assert(el.addMsg.textContent.includes('Ошибка')); assert.equal(el.name.value, '<script>alert(1)</script>'); assert(!el.add.disabled); return; }
   assert.equal(el.objects.children[0].children[0].textContent, '<script>alert(1)</script>');
-  await el.objects.children[0].children[3].click();
+  const button = text => el.objects.children[0].children.find(child => child.textContent === text);
+  assert.equal(rows[0].responsible, 'Иванов Иван');
+  assert.equal(el.objects.children[0].children[3].textContent, 'Ответственный: Иванов Иван');
+  if (mode.startsWith('update') || mode === 'edit-cancel') {
+    button('Редактировать').click();
+    assert.equal(el.responsible.value, 'Иванов Иван');
+    assert.equal(el.formTitle.textContent, 'Редактировать объект');
+    el.name.value = 'Новое название'; el.responsible.value = 'Петров Пётр'; el.status.value = 'В работе';
+    if (mode === 'edit-cancel') { await el.cancelEdit.click(); assert.equal(rows[0].name, '<script>alert(1)</script>'); assert.equal(el.name.value, ''); return; }
+    await el.add.click();
+    if (['update-error','update-denied'].includes(mode)) { assert.equal(el.name.value, 'Новое название'); assert(el.addMsg.textContent.includes('Ошибка')); assert.equal(rows[0].responsible, 'Иванов Иван'); assert(!el.add.disabled); return; }
+    assert.equal(rows.length, 1); assert.equal(rows[0].name, 'Новое название'); assert.equal(rows[0].responsible, 'Петров Пётр'); assert.equal(rows[0].status, 'В работе');
+    await el.reload.click(); assert.equal(el.objects.children[0].children[3].textContent, 'Ответственный: Петров Пётр');
+    button('Редактировать').click(); el.responsible.value = ''; await el.add.click(); assert.equal(rows[0].responsible, null);
+    assert.equal(el.formTitle.textContent, 'Добавить объект'); assert(el.cancelEdit.classList.contains('hidden'));
+  }
+  await button('Удалить объект').click();
   if (mode === 'delete-denied') { assert.equal(rows.length, 1); assert(el.listMsg.textContent.includes('не удалён')); }
   else { assert.equal(rows.length, 0); assert.equal(el.objects.textContent, 'Объекты пока не добавлены'); }
   await el.signOut.click(); assert(el.app.classList.contains('hidden')); assert.equal(el.objects.children.length, 0);
 }
 (async () => {
-  for (const mode of ['normal', 'access-error', 'denied', 'cdn-error', 'save-error', 'delete-denied', 'email', 'email-error', 'recovery', 'recovery-expired', 'recovery-save-error']) {
+  for (const mode of ['normal', 'access-error', 'denied', 'cdn-error', 'save-error', 'delete-denied', 'email', 'email-error', 'recovery', 'recovery-expired', 'recovery-save-error', 'update', 'update-error', 'update-denied', 'edit-cancel']) {
     await scenario(mode); console.log(`${mode}: passed`);
   }
 })().catch(e => { console.error(e); process.exitCode = 1; });
