@@ -40,7 +40,7 @@ create policy "Attach photos to own accessible reports" on public.daily_reports 
 insert into storage.buckets(id,name,public,file_size_limit,allowed_mime_types)
  values ('daily-photos','daily-photos',false,10485760,array['image/jpeg','image/png','image/webp']);
 create policy "Read photos for accessible objects" on storage.objects for select to authenticated
- using (bucket_id='daily-photos' and exists(select 1 from public.objects o where o.id::text=(storage.foldername(name))[1]));
+ using (bucket_id='daily-photos' and exists(select 1 from public.objects project where project.id::text=(storage.foldername(storage.objects.name))[1]));
 create policy "Upload own report photos" on storage.objects for insert to authenticated
  with check (bucket_id='daily-photos' and (storage.foldername(name))[3]=(select auth.uid())::text
  and exists(select 1 from public.daily_reports r where r.id::text=(storage.foldername(name))[2]
