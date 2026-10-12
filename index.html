@@ -2,19 +2,65 @@
 <html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>СтройКонтроль</title>
 <style>*{box-sizing:border-box}body{margin:0;background:#f1f4f8;font:16px Arial,sans-serif;color:#202d40}header{background:#213d6a;color:#fff;padding:26px 18px}h1{margin:0 0 10px;font-size:29px}main{max-width:750px;margin:auto;padding:16px}.card{background:white;border-radius:16px;padding:20px;margin-bottom:16px;box-shadow:0 3px 12px #0001}input,select,button{width:100%;padding:13px;margin:7px 0;border-radius:9px;font-size:16px;border:1px solid #c7d0dd}button{background:#3266b8;color:white;border:0;font-weight:bold;cursor:pointer}button:disabled{opacity:.5}.danger{background:#ae4646}.muted{color:#637084;font-size:14px}.object{border-top:1px solid #ddd;padding:15px 0}.error{color:#b32626;white-space:pre-wrap}.hidden{display:none}</style></head>
 <body><header><h1>🏗️ СтройКонтроль</h1>Управление строительными объектами</header><main>
-<section id="login" class="card"><h2>Вход для сотрудников</h2><input id="email" type="email" placeholder="Рабочая почта" autocomplete="email"><input id="password" type="password" placeholder="Пароль" autocomplete="current-password"><button id="signIn" disabled>Войти</button><p class="muted">Используйте учётную запись, созданную администратором в Supabase Authentication.</p><p id="loginMsg" class="error" role="status" aria-live="polite">Подключение...</p><button id="retry" class="hidden" type="button">Повторить подключение</button></section>
+<section id="login" class="card"><h2>Вход для сотрудников</h2><input id="email" type="email" placeholder="Рабочая почта" autocomplete="email"><input id="password" type="password" placeholder="Пароль" autocomplete="current-password"><button id="signIn" disabled>Войти</button><button id="forgot" type="button" disabled>Забыл пароль</button><p class="muted">Войдите своей рабочей почтой и паролем СтройКонтроля. Если забыли пароль, восстановите его по почте.</p><p id="loginMsg" class="error" role="status" aria-live="polite">Подключение...</p><button id="retry" class="hidden" type="button">Повторить подключение</button></section>
+<section id="recovery" class="card hidden"><h2>Новый пароль</h2><p id="recoveryInfo" class="muted">Проверяем ссылку восстановления...</p><label for="newPassword">Новый пароль, минимум 8 символов</label><input id="newPassword" type="password" autocomplete="new-password"><label for="repeatPassword">Повторите новый пароль</label><input id="repeatPassword" type="password" autocomplete="new-password"><button id="savePassword" disabled>Сохранить пароль</button><p id="recoveryMsg" class="error" role="status" aria-live="polite"></p><button id="backToLogin" type="button">Вернуться ко входу</button></section>
 <div id="app" class="hidden"><section class="card"><p id="who" class="muted"></p><button id="signOut">Выйти</button></section><section class="card"><h2>Мои объекты</h2><button id="reload" type="button">Обновить список</button><div id="objects">Загрузка...</div><p id="listMsg" class="error"></p></section><section class="card"><h2>Добавить объект</h2><input id="name" placeholder="Название объекта"><input id="address" placeholder="Адрес объекта"><label for="deadline">Срок завершения</label><input id="deadline" type="date"><select id="status"><option>Не начат</option><option>В работе</option><option>Приостановлен</option><option>Завершён</option></select><button id="add">Добавить объект</button><p id="addMsg" class="error"></p></section></div>
 </main><noscript>Для работы приложения включите JavaScript в браузере.</noscript><script type="module">
 const $=id=>document.getElementById(id);
 function message(id,text){$(id).textContent=text||''}
 function errorText(e){
   if(e?.message==='Invalid login credentials') return 'Неверная почта или пароль.';
+  if(e?.name==='AbortError') return 'Сервер не ответил за 20 секунд. Повторите попытку.';
+  if(e?.status===429) return 'Слишком много запросов. Подождите и повторите попытку.';
   if(e?.message==='Email not confirmed') return 'Подтвердите почту учётной записи.';
   if(['42P01','PGRST205'].includes(e?.code)) return 'В Supabase отсутствует нужная таблица. Проверьте настройку базы.';
   if(e?.code==='42501') return 'Нет доступа к таблице. Проверьте права и политики RLS в Supabase.';
   return e?.message||'Не удалось связаться с сервером. Проверьте интернет и повторите попытку.';
 }
 let supabase=null, currentUser=null, accessAllowed=false, sessionVersion=0, listVersion=0;
+const initialParams=new URLSearchParams(location.search);
+const initialHash=new URLSearchParams(location.hash.slice(1));
+let recovering=initialParams.get('recovery')==='1'||initialHash.get('type')==='recovery';
+const authLinkError=initialHash.get('error_description')||initialParams.get('error_description');
+let recoveryVersion=0;
+async function showRecovery(){
+  const version=++recoveryVersion;
+  sessionVersion++;hideApp();$('login').classList.add('hidden');$('recovery').classList.remove('hidden');
+  $('savePassword').disabled=true;
+  try{
+    const {data:{user},error}=await supabase.auth.getUser();
+    if(version!==recoveryVersion||!recovering)return;
+    if(error||!user)throw new Error('Ссылка недействительна или истекла. Вернитесь ко входу и запросите новую.');
+    $('recoveryInfo').textContent='Задайте новый пароль для '+user.email;
+    $('savePassword').disabled=false;
+  }catch(e){if(version===recoveryVersion){$('recoveryInfo').textContent='Не удалось подтвердить восстановление';message('recoveryMsg',errorText(e))}}
+}
+function cleanAuthUrl(){history.replaceState(null,'',location.pathname)}
+$('backToLogin').onclick=()=>{recovering=false;recoveryVersion++;$('recovery').classList.add('hidden');cleanAuthUrl();hideApp();message('loginMsg','Введите почту, чтобы запросить новую ссылку восстановления.')};
+$('forgot').onclick=async()=>{
+  const email=$('email').value.trim();
+  if(!email||!$('email').checkValidity()){message('loginMsg','Введите корректную рабочую почту');return}
+  $('forgot').disabled=true;message('loginMsg','Отправляем запрос...');
+  try{
+    const redirectTo=new URL(location.pathname,location.origin);redirectTo.searchParams.set('recovery','1');
+    const {error}=await supabase.auth.resetPasswordForEmail(email,{redirectTo:redirectTo.href});
+    if(error)throw error;
+    message('loginMsg','Если эта почта зарегистрирована, на неё отправлена ссылка восстановления. Проверьте входящие и спам.');
+  }catch(e){message('loginMsg','Не удалось отправить письмо: '+errorText(e))}finally{$('forgot').disabled=false}
+};
+$('savePassword').onclick=async()=>{
+  if(!recovering||$('savePassword').disabled)return;
+  const password=$('newPassword').value;
+  if(password.length<8){message('recoveryMsg','Введите минимум 8 символов');return}
+  if(password!==$('repeatPassword').value){message('recoveryMsg','Пароли не совпадают');return}
+  $('savePassword').disabled=true;message('recoveryMsg','');
+  try{
+    const {error}=await supabase.auth.updateUser({password});if(error)throw error;
+    $('newPassword').value='';$('repeatPassword').value='';
+    recovering=false;recoveryVersion++;$('recovery').classList.add('hidden');cleanAuthUrl();
+    message('loginMsg','Пароль сохранён.');await showSession();
+  }catch(e){message('recoveryMsg','Ошибка сохранения пароля: '+errorText(e))}finally{$('savePassword').disabled=false}
+};
 function hideApp(){
   accessAllowed=false; listVersion++;
   $('login').classList.remove('hidden'); $('app').classList.add('hidden');
@@ -54,6 +100,7 @@ async function refresh(){
   }
 }
 async function showSession(){
+  if(recovering){await showRecovery();return}
   const version=++sessionVersion;
   try{
     const {data:{session},error}=await supabase.auth.getSession();
@@ -103,15 +150,27 @@ $('add').onclick=async()=>{
 $('retry').onclick=()=>location.reload();
 try{
   const {createClient}=await import('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm');
-  supabase=createClient('https://yshhzvcitpeszhavugzn.supabase.co','sb_publishable_geax2_1C3bA_i4AEDIs_kQ_GpUmOuVL');
+  supabase=createClient('https://yshhzvcitpeszhavugzn.supabase.co','sb_publishable_geax2_1C3bA_i4AEDIs_kQ_GpUmOuVL',{
+    global:{fetch:async(input,init={})=>{
+      const controller=new AbortController();
+      const abort=()=>controller.abort();
+      if(init.signal?.aborted)abort();
+      else init.signal?.addEventListener('abort',abort,{once:true});
+      const timer=setTimeout(abort,20000);
+      try{return await fetch(input,{...init,signal:controller.signal})}
+      finally{clearTimeout(timer);init.signal?.removeEventListener('abort',abort)}
+    }}
+  });
   // Defer calls to Supabase until its auth callback releases the auth lock.
   supabase.auth.onAuthStateChange((event)=>{
-    if(event==='SIGNED_OUT'){sessionVersion++;currentUser=null;hideApp()}
+    if(event==='PASSWORD_RECOVERY'){recovering=true;setTimeout(()=>showRecovery(),0)}
+    else if(event==='SIGNED_OUT'){sessionVersion++;currentUser=null;hideApp()}
     else if(['SIGNED_IN','TOKEN_REFRESHED','USER_UPDATED'].includes(event))setTimeout(()=>showSession(),0);
   });
   message('loginMsg','');
   await showSession();
-  $('signIn').disabled=false;
+  $('signIn').disabled=false;$('forgot').disabled=false;
+  if(authLinkError){message('loginMsg','Ссылка входа истекла или недействительна. Запросите новую через «Забыл пароль».')}
   if(!$('loginMsg').textContent)message('loginMsg','');
 }catch(e){hideApp();message('loginMsg','Не удалось загрузить подключение Supabase. Проверьте интернет и нажмите «Повторить подключение».');$('retry').classList.remove('hidden')}
 </script></body></html>
