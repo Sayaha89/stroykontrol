@@ -55,3 +55,7 @@ grant select on public.team_members to authenticated;
 revoke all on public.daily_reports from anon,authenticated;
 grant select,insert on public.daily_reports to authenticated;
 grant update(photos) on public.daily_reports to authenticated;
+
+-- Backend employee handler: bypassing RLS still requires table privileges.
+grant select on public.admins to service_role;
+grant insert on public.team_members to service_role;

@@ -10,7 +10,8 @@ Deno.serve(async req=>{
  const {data:{user},error}=await admin.auth.getUser(jwt);
  if(error||!user)return reply(401,{error:'Сессия истекла'});
  const {data:member,error:roleError}=await admin.from('admins').select('user_id').eq('user_id',user.id).maybeSingle();
- if(roleError||!member)return reply(403,{error:'Только руководитель может создавать сотрудников'});
+ if(roleError)return reply(500,{error:'Сервер не смог проверить права руководителя. Повторите попытку.'});
+ if(!member)return reply(403,{error:'Только руководитель может создавать сотрудников'});
  try{
   const {email,full_name,password}=await req.json();
   if(typeof email!=='string'||!/^\S+@\S+\.\S+$/.test(email)||typeof full_name!=='string'||!full_name.trim()||typeof password!=='string'||password.length<12)return reply(400,{error:'Укажите ФИО, почту и пароль от 12 символов'});
