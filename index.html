@@ -1,10 +1,12 @@
 <!doctype html>
 <html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>СтройКонтроль</title>
-<style>*{box-sizing:border-box}body{margin:0;background:#f1f4f8;font:16px Arial,sans-serif;color:#202d40}header{background:#213d6a;color:#fff;padding:26px 18px}h1{margin:0 0 10px;font-size:29px}main{max-width:750px;margin:auto;padding:16px}.card{background:white;border-radius:16px;padding:20px;margin-bottom:16px;box-shadow:0 3px 12px #0001}input,select,button{width:100%;padding:13px;margin:7px 0;border-radius:9px;font-size:16px;border:1px solid #c7d0dd}button{background:#3266b8;color:white;border:0;font-weight:bold;cursor:pointer}button:disabled{opacity:.5}.danger{background:#ae4646}.muted{color:#637084;font-size:14px}.object{border-top:1px solid #ddd;padding:15px 0}.error{color:#b32626;white-space:pre-wrap}.hidden{display:none}</style></head>
+<style>*{box-sizing:border-box}body{margin:0;background:#f1f4f8;font:16px Arial,sans-serif;color:#202d40}header{background:#213d6a;color:#fff;padding:26px 18px}h1{margin:0 0 10px;font-size:29px}main{max-width:750px;margin:auto;padding:16px}.card{background:white;border-radius:16px;padding:20px;margin-bottom:16px;box-shadow:0 3px 12px #0001}input,select,textarea,button{width:100%;padding:13px;margin:7px 0;border-radius:9px;font-size:16px;border:1px solid #c7d0dd}button{background:#3266b8;color:white;border:0;font-weight:bold;cursor:pointer}button:disabled{opacity:.5}.danger{background:#ae4646}.muted{color:#637084;font-size:14px}.object{border-top:1px solid #ddd;padding:15px 0}.error{color:#b32626;white-space:pre-wrap}.hidden{display:none}textarea{min-height:90px;resize:vertical}.badge{padding:6px 10px;border-radius:8px;background:#edf2fa;display:inline-block;margin:4px 4px 4px 0;font-size:14px}.bad{background:#fff0ed;color:#ab3020}.good{background:#e5f4e9;color:#26713c}.photos{display:flex;gap:8px;flex-wrap:wrap}.photos img{width:130px;height:100px;object-fit:cover;border-radius:8px}.report{border-top:1px solid #ddd;padding-top:16px;margin-top:16px}.report p{white-space:pre-wrap}</style></head>
 <body><header><h1>🏗️ СтройКонтроль</h1>Управление строительными объектами</header><main>
 <section id="login" class="card"><h2>Вход для сотрудников</h2><input id="email" type="email" placeholder="Рабочая почта" autocomplete="email"><input id="password" type="password" placeholder="Пароль" autocomplete="current-password"><button id="signIn" disabled>Войти</button><button id="forgot" type="button" disabled>Забыл пароль</button><p class="muted">Войдите своей рабочей почтой и паролем СтройКонтроля. Если забыли пароль, восстановите его по почте.</p><p id="loginMsg" class="error" role="status" aria-live="polite">Подключение...</p><button id="retry" class="hidden" type="button">Повторить подключение</button></section>
 <section id="recovery" class="card hidden"><h2>Новый пароль</h2><p id="recoveryInfo" class="muted">Проверяем ссылку восстановления...</p><label for="newPassword">Новый пароль, минимум 8 символов</label><input id="newPassword" type="password" autocomplete="new-password"><label for="repeatPassword">Повторите новый пароль</label><input id="repeatPassword" type="password" autocomplete="new-password"><button id="savePassword" disabled>Сохранить пароль</button><p id="recoveryMsg" class="error" role="status" aria-live="polite"></p><button id="backToLogin" type="button">Вернуться ко входу</button></section>
-<div id="app" class="hidden"><section class="card"><p id="who" class="muted"></p><button id="signOut">Выйти</button></section><section class="card"><h2>Мои объекты</h2><button id="reload" type="button">Обновить список</button><div id="objects">Загрузка...</div><p id="listMsg" class="error"></p></section><section id="objectForm" class="card"><h2 id="formTitle">Добавить объект</h2><label for="name">Название объекта</label><input id="name" placeholder="Название объекта"><label for="address">Адрес объекта</label><input id="address" placeholder="Адрес объекта"><label for="responsible">Ответственный</label><input id="responsible" placeholder="ФИО ответственного"><label for="deadline">Срок завершения</label><input id="deadline" type="date"><label for="status">Статус</label><select id="status"><option>Не начат</option><option>В работе</option><option>Приостановлен</option><option>Завершён</option></select><button id="add">Добавить объект</button><button id="cancelEdit" type="button" class="hidden">Отменить редактирование</button><p id="addMsg" class="error"></p></section></div>
+<div id="app" class="hidden"><section class="card"><p id="who" class="muted"></p><button id="changePassword" type="button">Изменить мой пароль</button><button id="signOut">Выйти</button></section><section class="card"><h2>Ежедневный контроль</h2><label for="controlDate">Дата контроля</label><input id="controlDate" type="date"><p id="summary" class="muted"></p></section><section class="card"><h2>Мои объекты</h2><button id="reload" type="button">Обновить список</button><div id="objects">Загрузка...</div><p id="listMsg" class="error"></p></section><section id="objectForm" class="card adminOnly"><h2 id="formTitle">Добавить объект</h2><label for="name">Название объекта</label><input id="name" placeholder="Название объекта"><label for="address">Адрес объекта</label><input id="address" placeholder="Адрес объекта"><label for="responsible">Ответственный</label><input id="responsible" placeholder="ФИО ответственного"><label for="start_date">Дата начала</label><input id="start_date" type="date"><label for="responsible_user_id">Доступ сотрудника к объекту</label><select id="responsible_user_id"><option value="">Не назначен</option></select><label for="deadline">Срок завершения</label><input id="deadline" type="date"><label for="status">Статус</label><select id="status"><option>Не начат</option><option>В работе</option><option>Приостановлен</option><option>Завершён</option></select><button id="add">Добавить объект</button><button id="cancelEdit" type="button" class="hidden">Отменить редактирование</button><p id="addMsg" class="error"></p></section>
+<section class="card" id="journal"><h2>Ежедневный журнал</h2><label for="reportObject">Объект</label><select id="reportObject"></select><label for="reportDate">Дата отчёта</label><input id="reportDate" type="date"><label for="done">Что сделали сегодня</label><textarea id="done" placeholder="Объём и результат работ"></textarea><label for="next_plan">План на следующий рабочий день</label><textarea id="next_plan"></textarea><label for="problems">Проблемы и препятствия</label><textarea id="problems"></textarea><label for="needs">Какое решение нужно от руководителя</label><textarea id="needs"></textarea><label for="reportPhotos">Фотографии</label><input id="reportPhotos" type="file" accept="image/*" multiple><p class="muted">До 8 фотографий за одну загрузку. Крупные фото уменьшаются перед отправкой.</p><button id="saveReport">Отправить отчёт</button><p id="reportMsg" role="status" aria-live="polite"></p><div id="reports"></div></section>
+<section id="teamCard" class="card adminOnly"><h2>Сотрудники</h2><p class="muted">Создайте вход сотрудника, затем назначьте его на объект. Передайте ему почту и начальный пароль лично.</p><label for="employeeName">ФИО</label><input id="employeeName"><label for="employeeEmail">Почта сотрудника</label><input id="employeeEmail" type="email"><label for="employeePassword">Начальный пароль, минимум 12 символов</label><input id="employeePassword" type="password" autocomplete="new-password"><button id="createEmployee">Создать сотрудника</button><p id="employeeMsg" class="error" role="status"></p><div id="teamList"></div></section></div>
 </main><noscript>Для работы приложения включите JavaScript в браузере.</noscript><script type="module">
 const $=id=>document.getElementById(id);
 function message(id,text){$(id).textContent=text||''}
@@ -12,13 +14,14 @@ function errorText(e){
   if(e?.message==='Invalid login credentials') return 'Неверная почта или пароль.';
   if(e?.name==='AbortError') return 'Сервер не ответил за 20 секунд. Повторите попытку.';
   if(e?.status===429) return 'Слишком много запросов. Подождите и повторите попытку.';
+  if(e?.code==='23503')return 'У объекта есть отчёты. Сохраните его в статусе «Завершён» вместо удаления.';
   if(e?.message==='Email not confirmed') return 'Подтвердите почту учётной записи.';
   if(['42P01','PGRST205'].includes(e?.code)) return 'В Supabase отсутствует нужная таблица. Проверьте настройку базы.';
   if(e?.code==='42501') return 'Нет доступа к таблице. Проверьте права и политики RLS в Supabase.';
   return e?.message||'Не удалось связаться с сервером. Проверьте интернет и повторите попытку.';
 }
 let supabase=null, currentUser=null, accessAllowed=false, sessionVersion=0, listVersion=0;
-let editingId=null;
+let editingId=null,isAdmin=false,team=[],objectRows=[],dailyRows=[],journalVersion=0;
 const initialParams=new URLSearchParams(location.search);
 const initialHash=new URLSearchParams(location.hash.slice(1));
 let recovering=initialParams.get('recovery')==='1'||initialHash.get('type')==='recovery';
@@ -37,6 +40,7 @@ async function showRecovery(){
   }catch(e){if(version===recoveryVersion){$('recoveryInfo').textContent='Не удалось подтвердить восстановление';message('recoveryMsg',errorText(e))}}
 }
 function cleanAuthUrl(){history.replaceState(null,'',location.pathname)}
+$('changePassword').onclick=()=>{recovering=true;showRecovery()};
 $('backToLogin').onclick=()=>{recovering=false;recoveryVersion++;$('recovery').classList.add('hidden');cleanAuthUrl();hideApp();message('loginMsg','Введите почту, чтобы запросить новую ссылку восстановления.')};
 $('forgot').onclick=async()=>{
   const email=$('email').value.trim();
@@ -62,66 +66,87 @@ $('savePassword').onclick=async()=>{
     message('loginMsg','Пароль сохранён.');await showSession();
   }catch(e){message('recoveryMsg','Ошибка сохранения пароля: '+errorText(e))}finally{$('savePassword').disabled=false}
 };
+function today(){return new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Irkutsk',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date())}
+$('controlDate').value=today();$('reportDate').value=today();
+function node(tag,text,className){const n=document.createElement(tag);if(text)n.textContent=text;if(className)n.className=className;return n}
 function resetObjectForm(){
-  editingId=null;
-  for(const id of ['name','address','responsible','deadline'])$(id).value='';
-  $('status').value='Не начат';$('formTitle').textContent='Добавить объект';
-  $('add').textContent='Добавить объект';$('cancelEdit').classList.add('hidden');message('addMsg','');
+ editingId=null;for(const id of ['name','address','responsible','deadline','start_date','responsible_user_id'])$(id).value='';
+ $('status').value='Не начат';$('formTitle').textContent='Добавить объект';$('add').textContent='Добавить объект';$('cancelEdit').classList.add('hidden');message('addMsg','');
 }
 function editObject(o){
-  if(!accessAllowed||$('add').disabled)return;
-  editingId=o.id;
-  for(const id of ['name','address','responsible','deadline'])$(id).value=o[id]||'';
-  const status=o.status||'Не начат';
-  if(!Array.from($('status').options).some(option=>option.value===status)){
-    const option=document.createElement('option');option.value=status;option.textContent=status;$('status').append(option);
-  }
-  $('status').value=status;$('formTitle').textContent='Редактировать объект';
-  $('add').textContent='Сохранить изменения';$('cancelEdit').classList.remove('hidden');message('addMsg','');
-  $('objectForm').scrollIntoView({behavior:'smooth',block:'start'});$('name').focus({preventScroll:true});
+ if(!isAdmin||$('add').disabled)return;editingId=o.id;
+ for(const id of ['name','address','responsible','deadline','start_date','responsible_user_id'])$(id).value=o[id]||'';
+ const status=o.status||'Не начат';if(!Array.from($('status').options).some(x=>x.value===status)){const option=node('option',status);option.value=status;$('status').append(option)}
+ $('status').value=status;$('formTitle').textContent='Редактировать объект';$('add').textContent='Сохранить изменения';$('cancelEdit').classList.remove('hidden');message('addMsg','');$('objectForm').scrollIntoView({behavior:'smooth',block:'start'});
 }
 $('cancelEdit').onclick=()=>{if(!$('add').disabled)resetObjectForm()};
+$('controlDate').onchange=()=>{if($('controlDate').value)refresh()};
+$('reportObject').onchange=loadJournal;
+$('responsible_user_id').onchange=()=>{const member=team.find(m=>m.user_id===$('responsible_user_id').value);if(member)$('responsible').value=member.full_name};
 function hideApp(){
-  resetObjectForm();
-  accessAllowed=false; listVersion++;
-  $('login').classList.remove('hidden'); $('app').classList.add('hidden');
-  $('objects').replaceChildren(); $('who').textContent='';
+ resetObjectForm();accessAllowed=false;isAdmin=false;listVersion++;journalVersion++;objectRows=[];dailyRows=[];team=[];
+ $('login').classList.remove('hidden');$('app').classList.add('hidden');for(const id of ['objects','reports','teamList'])$(id).replaceChildren();$('who').textContent='';
+ for(const id of ['done','next_plan','problems','needs','reportPhotos','employeePassword'])$(id).value='';
 }
 async function refresh(){
-  if(!accessAllowed) return;
-  const version=++listVersion;
-  message('listMsg',''); $('objects').textContent='Загрузка...';
-  try{
-    const {data,error}=await supabase.from('objects').select('id,name,address,deadline,status,responsible').order('id',{ascending:false});
-    if(error) throw error;
-    if(version!==listVersion||!accessAllowed) return;
-    $('objects').replaceChildren();
-    if(!data.length){$('objects').textContent='Объекты пока не добавлены';return}
-    for(const o of data){
-      const wrap=document.createElement('div'); wrap.className='object';
-      const title=document.createElement('h3'); title.textContent=o.name||'Без названия';
-      const details=document.createElement('p'); details.textContent=[o.address,o.status].filter(Boolean).join(' — ');
-      const date=document.createElement('p'); date.className='muted'; date.textContent=o.deadline?'Срок: '+o.deadline:'Срок не указан';
-      const responsible=document.createElement('p');responsible.textContent='Ответственный: '+(o.responsible||'не назначен');
-      const edit=document.createElement('button');edit.textContent='Редактировать';edit.onclick=()=>editObject(o);
-      const del=document.createElement('button'); del.className='danger'; del.textContent='Удалить объект';
-      del.onclick=async()=>{
-        if(!accessAllowed||!confirm('Удалить объект «'+o.name+'»?'))return;
-        del.disabled=true;
-        try{
-          const {data:deleted,error}=await supabase.from('objects').delete().eq('id',o.id).select('id');
-          if(error)throw error;
-          if(!deleted?.length)throw new Error('Объект не удалён: нет прав либо он уже удалён. Обновите список.');
-          if(editingId===o.id)resetObjectForm();
-          await refresh();
-        }catch(e){message('listMsg','Ошибка удаления: '+errorText(e))}finally{del.disabled=false}
-      };
-      wrap.append(title,details,date,responsible,edit,del); $('objects').append(wrap);
-    }
-  }catch(e){
-    if(version!==listVersion) return;
-    $('objects').textContent='Не удалось загрузить объекты'; message('listMsg',errorText(e));
+ if(!accessAllowed)return;const version=++listVersion;message('listMsg','');$('objects').textContent='Загрузка...';
+ try{
+  const results=await Promise.all([
+   supabase.from('objects').select('id,name,address,deadline,start_date,status,responsible,responsible_user_id').order('id',{ascending:false}),
+   supabase.from('daily_reports').select('object_id,author_id,problems,needs,created_at').eq('report_date',$('controlDate').value),
+   supabase.from('team_members').select('user_id,full_name,email').order('full_name')
+  ]);
+  for(const r of results)if(r.error)throw r.error;if(version!==listVersion||!accessAllowed)return;
+  objectRows=results[0].data;dailyRows=results[1].data;team=results[2].data;
+  const active=objectRows.filter(o=>o.status!=='Завершён');
+  const reported=o=>dailyRows.some(r=>r.object_id===o.id&&(!o.responsible_user_id||r.author_id===o.responsible_user_id));
+  const reportCount=active.filter(reported).length;
+  $('summary').textContent=`Активных объектов: ${active.length}. Отчитались: ${reportCount}. Без отчёта: ${active.length-reportCount}.`;
+  const oldAssignment=$('responsible_user_id').value;$('responsible_user_id').replaceChildren();const empty=node('option','Не назначен');empty.value='';$('responsible_user_id').append(empty);
+  for(const m of team){const opt=node('option',m.full_name+' — '+m.email);opt.value=m.user_id;$('responsible_user_id').append(opt)}$('responsible_user_id').value=oldAssignment;
+  $('teamList').replaceChildren();for(const m of team)$('teamList').append(node('p',m.full_name+' — '+m.email));
+  const selected=$('reportObject').value;$('reportObject').replaceChildren();for(const o of objectRows){const opt=node('option',o.name);opt.value=String(o.id);$('reportObject').append(opt)}if(objectRows.some(o=>String(o.id)===selected))$('reportObject').value=selected;
+  $('saveReport').disabled=!objectRows.length;$('objects').replaceChildren();if(!objectRows.length)$('objects').textContent='Объекты пока не назначены или не добавлены';
+  for(const o of objectRows){
+   const wrap=node('div',null,'object');wrap.append(node('h3',o.name||'Без названия'),node('p',[o.address,o.status].filter(Boolean).join(' — ')),node('p','Начало: '+(o.start_date||'не указано')+' · Срок: '+(o.deadline||'не указан'),'muted'),node('p','Ответственный: '+(o.responsible||'не назначен')));
+   wrap.append(node('span',reported(o)?'Отчёт есть':'Нет отчёта',reported(o)?'badge good':'badge bad'));
+   if(o.deadline&&o.deadline<$('controlDate').value&&o.status!=='Завершён')wrap.append(node('span','Срок просрочен','badge bad'));
+   if(dailyRows.some(r=>r.object_id===o.id&&(r.problems.trim()||r.needs.trim())))wrap.append(node('span','Нужна помощь','badge bad'));
+   const journal=node('button','Отчёты и фото');journal.onclick=()=>{$('reportObject').value=String(o.id);loadJournal();$('journal').scrollIntoView({behavior:'smooth',block:'start'})};wrap.append(journal);
+   if(isAdmin){const edit=node('button','Редактировать');edit.onclick=()=>editObject(o);const del=node('button','Удалить объект','danger');del.onclick=async()=>{if(!confirm('Удалить объект «'+o.name+'»?'))return;del.disabled=true;try{const {data,error}=await supabase.from('objects').delete().eq('id',o.id).select('id');if(error)throw error;if(!data.length)throw Error('Не удалось удалить объект');if(editingId===o.id)resetObjectForm();await refresh()}catch(e){message('listMsg',errorText(e))}finally{del.disabled=false}};wrap.append(edit,del)}
+   $('objects').append(wrap);
   }
+  await loadJournal();
+ }catch(e){if(version===listVersion){$('objects').textContent='Не удалось загрузить объекты';message('listMsg',errorText(e))}}
+}
+async function loadJournal(){
+ const version=++journalVersion,id=$('reportObject').value;$('reports').replaceChildren();if(!accessAllowed||!id)return;
+ $('reports').textContent='Загрузка журнала...';
+ try{
+  const {data,error}=await supabase.from('daily_reports').select('*').eq('object_id',id).order('report_date',{ascending:false}).order('created_at',{ascending:false}).limit(20);if(error)throw error;
+  if(version!==journalVersion||!accessAllowed)return;$('reports').replaceChildren();if(!data.length)$('reports').textContent='Отчётов пока нет';
+  for(const r of data){
+   const card=node('div',null,'report');const member=team.find(m=>m.user_id===r.author_id);card.append(node('h3',r.report_date+' · '+(member?.full_name||'Сотрудник')));
+   for(const [field,label] of [['done','Сделано'],['next_plan','Следующий день'],['problems','Проблемы'],['needs','Нужно решение']])if(r[field])card.append(node('p',label+': '+r[field]));
+   const photos=node('div',null,'photos');card.append(photos);$('reports').append(card);
+   for(const path of r.photos||[]){const {data:signed,error:photoError}=await supabase.storage.from('daily-photos').createSignedUrl(path,3600);if(version!==journalVersion||!accessAllowed)return;if(photoError){photos.append(node('span','Фото временно недоступно'));continue}const link=node('a');link.href=signed.signedUrl;link.target='_blank';link.rel='noopener';const img=node('img');img.src=signed.signedUrl;img.alt='Фото работ за '+r.report_date;img.loading='lazy';link.append(img);photos.append(link)}
+   if(r.author_id===currentUser.id){const input=node('input');input.type='file';input.accept='image/*';input.multiple=true;const addPhotos=node('button','Добавить фото к отчёту');addPhotos.onclick=async()=>{addPhotos.disabled=true;try{await attachPhotos(r,Array.from(input.files||[]));await loadJournal()}catch(e){message('reportMsg',errorText(e));await loadJournal()}finally{addPhotos.disabled=false}};card.append(input,addPhotos)}
+  }
+ }catch(e){if(version===journalVersion)$('reports').textContent=errorText(e)}
+}
+async function preparePhoto(file){
+ if(!file.type.startsWith('image/'))throw Error('Выберите фотографию');if(file.size>30*1024*1024)throw Error('Исходное фото больше 30 МБ');
+ const url=URL.createObjectURL(file);try{const img=new Image();img.src=url;await img.decode();const scale=Math.min(1,1800/Math.max(img.width,img.height));const canvas=document.createElement('canvas');canvas.width=Math.round(img.width*scale);canvas.height=Math.round(img.height*scale);canvas.getContext('2d').drawImage(img,0,0,canvas.width,canvas.height);const blob=await new Promise(resolve=>canvas.toBlob(resolve,'image/jpeg',.82));if(!blob)throw Error('Не удалось обработать фото');return blob}finally{URL.revokeObjectURL(url)}
+}
+async function attachPhotos(report,files){
+ if(!files.length)throw Error('Сначала выберите фотографии');if(files.length>8)throw Error('Можно загрузить до 8 фото за один раз');
+ for(const file of files){
+  const blob=await preparePhoto(file),path=`${report.object_id}/${report.id}/${currentUser.id}/${crypto.randomUUID()}.jpg`;
+  const {error}=await supabase.storage.from('daily-photos').upload(path,blob,{contentType:'image/jpeg',upsert:false});if(error)throw error;
+  const paths=[...(report.photos||[]),path];const {data,error:saveError}=await supabase.from('daily_reports').update({photos:paths}).eq('id',report.id).select('id');
+  if(saveError||!data.length){await supabase.storage.from('daily-photos').remove([path]);throw saveError||Error('Не удалось прикрепить фото к отчёту')}
+  report.photos=paths;
+ }
 }
 async function showSession(){
   if(recovering){await showRecovery();return}
@@ -136,7 +161,9 @@ async function showSession(){
     const {data:admin,error:adminError}=await supabase.from('admins').select('user_id').eq('user_id',currentUser.id).maybeSingle();
     if(version!==sessionVersion)return;
     if(adminError)throw adminError;
-    if(!admin){hideApp();message('loginMsg','У этого аккаунта нет доступа. Администратор должен добавить его в таблицу admins.');return}
+    isAdmin=!!admin;
+    if(!isAdmin){const {data:member,error:memberError}=await supabase.from('team_members').select('user_id').eq('user_id',currentUser.id).maybeSingle();if(memberError)throw memberError;if(!member){hideApp();message('loginMsg','Аккаунт не подключён к команде. Обратитесь к руководителю.');return}}
+    for(const section of document.querySelectorAll('.adminOnly'))section.classList.toggle('hidden',!isAdmin);
     accessAllowed=true; message('loginMsg','');
     $('login').classList.add('hidden'); $('app').classList.remove('hidden');
     $('who').textContent='Вы вошли: '+currentUser.email; await refresh();
@@ -160,26 +187,34 @@ $('signOut').onclick=async()=>{
 };
 $('reload').onclick=refresh;
 $('add').onclick=async()=>{
-  if(!accessAllowed||$('add').disabled)return;
-  message('addMsg','');const name=$('name').value.trim();
-  if(!name){message('addMsg','Введите название объекта');return}
-  const id=editingId,userId=currentUser.id;
-  const payload={name,address:$('address').value.trim()||null,responsible:$('responsible').value.trim()||null,deadline:$('deadline').value||null,status:$('status').value};
-  const fields=['add','cancelEdit','name','address','responsible','deadline','status'];
-  for(const field of fields)$(field).disabled=true;
-  try{
-    const query=id===null?supabase.from('objects').insert(payload):supabase.from('objects').update(payload).eq('id',id);
-    const {data,error}=await query.select('id');
-    if(error)throw error;
-    if(!data?.length)throw new Error(id===null?'Сервер не подтвердил сохранение объекта.':'Изменения не сохранены: объект удалён или нет права редактирования.');
-    if(!accessAllowed||currentUser?.id!==userId)return;
-    resetObjectForm();await refresh();
-  }catch(e){if(accessAllowed&&currentUser?.id===userId)message('addMsg','Ошибка сохранения: '+errorText(e))}
-  finally{for(const field of fields)$(field).disabled=false}
+ if(!accessAllowed||!isAdmin||$('add').disabled)return;message('addMsg','');const name=$('name').value.trim();if(!name){message('addMsg','Введите название объекта');return}
+ if($('start_date').value&&$('deadline').value&&$('start_date').value>$('deadline').value){message('addMsg','Дата начала позже срока завершения');return}
+ const id=editingId,userId=currentUser.id,payload={name,address:$('address').value.trim()||null,responsible:$('responsible').value.trim()||null,responsible_user_id:$('responsible_user_id').value||null,start_date:$('start_date').value||null,deadline:$('deadline').value||null,status:$('status').value};
+ const fields=['add','cancelEdit','name','address','responsible','responsible_user_id','start_date','deadline','status'];for(const f of fields)$(f).disabled=true;
+ try{const q=id===null?supabase.from('objects').insert(payload):supabase.from('objects').update(payload).eq('id',id);const {data,error}=await q.select('id');if(error)throw error;if(!data.length)throw Error('Объект не сохранён: нет доступа или он уже удалён');if(!accessAllowed||currentUser?.id!==userId)return;resetObjectForm();await refresh()}catch(e){message('addMsg',errorText(e))}finally{for(const f of fields)$(f).disabled=false}
+};
+$('saveReport').onclick=async()=>{
+ if(!accessAllowed||$('saveReport').disabled)return;message('reportMsg','');
+ const object_id=$('reportObject').value,done=$('done').value.trim(),report_date=$('reportDate').value,files=Array.from($('reportPhotos').files||[]);
+ if(!object_id||!done||!report_date){message('reportMsg','Выберите объект, дату и опишите выполненные работы');return}if(files.length>8){message('reportMsg','Выберите не больше 8 фото');return}
+ const fields=['saveReport','reportObject','reportDate','done','next_plan','problems','needs','reportPhotos'];for(const f of fields)$(f).disabled=true;let saved=false;
+ try{
+  const payload={object_id,author_id:currentUser.id,report_date,done,next_plan:$('next_plan').value.trim(),problems:$('problems').value.trim(),needs:$('needs').value.trim()};
+  const {data,error}=await supabase.from('daily_reports').insert(payload).select('*').single();if(error)throw error;if(!data)throw Error('Отчёт не сохранён');saved=true;
+  if(files.length)await attachPhotos(data,files);message('reportMsg','Отчёт сохранён'+(files.length?' с фотографиями':''));
+ }catch(e){message('reportMsg',(saved?'Текст отчёта сохранён. Не все фото прикреплены: ':'Ошибка сохранения: ')+errorText(e))}
+ finally{if(saved){for(const id of ['done','next_plan','problems','needs','reportPhotos'])$(id).value='';await refresh()}for(const f of fields)$(f).disabled=false;$('saveReport').disabled=!objectRows.length}
+};
+$('createEmployee').onclick=async()=>{
+ if(!isAdmin||$('createEmployee').disabled)return;message('employeeMsg','');
+ const full_name=$('employeeName').value.trim(),email=$('employeeEmail').value.trim(),password=$('employeePassword').value;
+ if(!full_name||!$('employeeEmail').checkValidity()||!email||password.length<12){message('employeeMsg','Укажите ФИО, корректную почту и пароль от 12 символов');return}
+ $('createEmployee').disabled=true;
+ try{const {data,error}=await supabase.functions.invoke('create-employee',{body:{full_name,email,password}});if(error){let detail;try{detail=await error.context?.json()}catch{}throw Error(detail?.error||errorText(error))}if(data?.error)throw Error(data.error);$('employeePassword').value='';$('employeeName').value='';$('employeeEmail').value='';message('employeeMsg','Сотрудник создан. Назначьте его в карточке объекта и передайте данные входа лично.');await refresh()}catch(e){message('employeeMsg',errorText(e))}finally{$('createEmployee').disabled=false}
 };
 $('retry').onclick=()=>location.reload();
 try{
-  const {createClient}=await import('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm');
+  const {createClient}=await import('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.3/+esm');
   supabase=createClient('https://yshhzvcitpeszhavugzn.supabase.co','sb_publishable_geax2_1C3bA_i4AEDIs_kQ_GpUmOuVL',{
     global:{fetch:async(input,init={})=>{
       const controller=new AbortController();
