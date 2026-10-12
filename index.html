@@ -1,114 +1,117 @@
-
-<!DOCTYPE html>
-<html lang="ru">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>СтройКонтроль</title>
-<style>
-*{box-sizing:border-box}
-body{margin:0;background:#f1f4f8;font-family:Arial,sans-serif;color:#182638}
-header{background:#173b69;color:white;padding:25px 18px}
-h1{margin:0;font-size:26px}
-header p{margin-bottom:0}
-main{max-width:800px;margin:auto;padding:16px}
-.card{background:white;border-radius:14px;padding:18px;margin-bottom:16px;box-shadow:0 2px 8px #0001}
-h2{margin-top:0;font-size:20px}
-input,select,button{width:100%;padding:13px;margin:7px 0;border-radius:9px;font-size:16px}
-input,select{border:1px solid #cbd3dd;background:white}
-button{background:#1766bd;border:0;color:white;font-weight:bold}
-.object{border-top:1px solid #ddd;padding:15px 0}
-.object strong{font-size:18px}
-.object p{margin:8px 0}
-small{color:#637084}
-.delete{background:#b63c3c}
-.empty{color:#667}
-</style>
-</head>
-<body>
-<header>
-<h1>🏗 СтройКонтроль</h1>
-<p>Управление строительными объектами</p>
-</header>
-<main>
-<section class="card">
-<h2>Мои объекты</h2>
-<div id="objects"></div>
-</section>
-<section class="card">
-<h2>Добавить объект</h2>
-<input id="name" placeholder="Название объекта">
-<input id="address" placeholder="Адрес объекта">
-<label>Срок завершения</label>
-<input id="deadline" type="date">
-<select id="status">
-<option>Не начат</option>
-<option>В работе</option>
-<option>Приостановлен</option>
-<option>Завершён</option>
-</select>
-<button onclick="addObject()">Добавить объект</button>
-</section>
-</main>
-<script>
-const key="stroykontrol_objects";
-let objects=[];
+<!doctype html>
+<html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>СтройКонтроль</title>
+<style>*{box-sizing:border-box}body{margin:0;background:#f1f4f8;font:16px Arial,sans-serif;color:#202d40}header{background:#213d6a;color:#fff;padding:26px 18px}h1{margin:0 0 10px;font-size:29px}main{max-width:750px;margin:auto;padding:16px}.card{background:white;border-radius:16px;padding:20px;margin-bottom:16px;box-shadow:0 3px 12px #0001}input,select,button{width:100%;padding:13px;margin:7px 0;border-radius:9px;font-size:16px;border:1px solid #c7d0dd}button{background:#3266b8;color:white;border:0;font-weight:bold;cursor:pointer}button:disabled{opacity:.5}.danger{background:#ae4646}.muted{color:#637084;font-size:14px}.object{border-top:1px solid #ddd;padding:15px 0}.error{color:#b32626;white-space:pre-wrap}.hidden{display:none}</style></head>
+<body><header><h1>🏗️ СтройКонтроль</h1>Управление строительными объектами</header><main>
+<section id="login" class="card"><h2>Вход для сотрудников</h2><input id="email" type="email" placeholder="Рабочая почта" autocomplete="email"><input id="password" type="password" placeholder="Пароль" autocomplete="current-password"><button id="signIn" disabled>Войти</button><p class="muted">Используйте учётную запись, созданную администратором в Supabase Authentication.</p><p id="loginMsg" class="error" role="status" aria-live="polite">Подключение...</p><button id="retry" class="hidden" type="button">Повторить подключение</button></section>
+<div id="app" class="hidden"><section class="card"><p id="who" class="muted"></p><button id="signOut">Выйти</button></section><section class="card"><h2>Мои объекты</h2><button id="reload" type="button">Обновить список</button><div id="objects">Загрузка...</div><p id="listMsg" class="error"></p></section><section class="card"><h2>Добавить объект</h2><input id="name" placeholder="Название объекта"><input id="address" placeholder="Адрес объекта"><label for="deadline">Срок завершения</label><input id="deadline" type="date"><select id="status"><option>Не начат</option><option>В работе</option><option>Приостановлен</option><option>Завершён</option></select><button id="add">Добавить объект</button><p id="addMsg" class="error"></p></section></div>
+</main><noscript>Для работы приложения включите JavaScript в браузере.</noscript><script type="module">
+const $=id=>document.getElementById(id);
+function message(id,text){$(id).textContent=text||''}
+function errorText(e){
+  if(e?.message==='Invalid login credentials') return 'Неверная почта или пароль.';
+  if(e?.message==='Email not confirmed') return 'Подтвердите почту учётной записи.';
+  if(['42P01','PGRST205'].includes(e?.code)) return 'В Supabase отсутствует нужная таблица. Проверьте настройку базы.';
+  if(e?.code==='42501') return 'Нет доступа к таблице. Проверьте права и политики RLS в Supabase.';
+  return e?.message||'Не удалось связаться с сервером. Проверьте интернет и повторите попытку.';
+}
+let supabase=null, currentUser=null, accessAllowed=false, sessionVersion=0, listVersion=0;
+function hideApp(){
+  accessAllowed=false; listVersion++;
+  $('login').classList.remove('hidden'); $('app').classList.add('hidden');
+  $('objects').replaceChildren(); $('who').textContent='';
+}
+async function refresh(){
+  if(!accessAllowed) return;
+  const version=++listVersion;
+  message('listMsg',''); $('objects').textContent='Загрузка...';
+  try{
+    const {data,error}=await supabase.from('objects').select('id,name,address,deadline,status').order('id',{ascending:false});
+    if(error) throw error;
+    if(version!==listVersion||!accessAllowed) return;
+    $('objects').replaceChildren();
+    if(!data.length){$('objects').textContent='Объекты пока не добавлены';return}
+    for(const o of data){
+      const wrap=document.createElement('div'); wrap.className='object';
+      const title=document.createElement('h3'); title.textContent=o.name||'Без названия';
+      const details=document.createElement('p'); details.textContent=[o.address,o.status].filter(Boolean).join(' — ');
+      const date=document.createElement('p'); date.className='muted'; date.textContent=o.deadline?'Срок: '+o.deadline:'Срок не указан';
+      const del=document.createElement('button'); del.className='danger'; del.textContent='Удалить объект';
+      del.onclick=async()=>{
+        if(!accessAllowed||!confirm('Удалить объект «'+o.name+'»?'))return;
+        del.disabled=true;
+        try{
+          const {data:deleted,error}=await supabase.from('objects').delete().eq('id',o.id).select('id');
+          if(error)throw error;
+          if(!deleted?.length)throw new Error('Объект не удалён: нет прав либо он уже удалён. Обновите список.');
+          await refresh();
+        }catch(e){message('listMsg','Ошибка удаления: '+errorText(e))}finally{del.disabled=false}
+      };
+      wrap.append(title,details,date,del); $('objects').append(wrap);
+    }
+  }catch(e){
+    if(version!==listVersion) return;
+    $('objects').textContent='Не удалось загрузить объекты'; message('listMsg',errorText(e));
+  }
+}
+async function showSession(){
+  const version=++sessionVersion;
+  try{
+    const {data:{session},error}=await supabase.auth.getSession();
+    if(error)throw error;
+    if(version!==sessionVersion)return;
+    currentUser=session?.user||null;
+    if(!currentUser){hideApp();return}
+    // This check complements server-side RLS; it must never replace it.
+    const {data:admin,error:adminError}=await supabase.from('admins').select('user_id').eq('user_id',currentUser.id).maybeSingle();
+    if(version!==sessionVersion)return;
+    if(adminError)throw adminError;
+    if(!admin){hideApp();message('loginMsg','У этого аккаунта нет доступа. Администратор должен добавить его в таблицу admins.');return}
+    accessAllowed=true; message('loginMsg','');
+    $('login').classList.add('hidden'); $('app').classList.remove('hidden');
+    $('who').textContent='Вы вошли: '+currentUser.email; await refresh();
+  }catch(e){if(version===sessionVersion){hideApp();message('loginMsg','Ошибка проверки доступа: '+errorText(e))}}
+}
+$('signIn').onclick=async()=>{
+  const email=$('email').value.trim(),password=$('password').value;
+  if(!email||!password){message('loginMsg','Введите почту и пароль');return}
+  message('loginMsg','');$('signIn').disabled=true;
+  try{
+    const {error}=await supabase.auth.signInWithPassword({email,password});
+    if(error)throw error;
+    $('password').value=''; await showSession();
+  }catch(e){message('loginMsg',errorText(e))}finally{$('signIn').disabled=false}
+};
+$('password').addEventListener('keydown',e=>{if(e.key==='Enter'&&!$('signIn').disabled)$('signIn').click()});
+$('signOut').onclick=async()=>{
+  $('signOut').disabled=true;
+  try{const {error}=await supabase.auth.signOut();if(error)throw error;currentUser=null;sessionVersion++;hideApp()}
+  catch(e){message('listMsg','Ошибка выхода: '+errorText(e))}finally{$('signOut').disabled=false}
+};
+$('reload').onclick=refresh;
+$('add').onclick=async()=>{
+  if(!accessAllowed)return;
+  message('addMsg','');const name=$('name').value.trim();
+  if(!name){message('addMsg','Введите название объекта');return}
+  $('add').disabled=true;
+  try{
+    const {data,error}=await supabase.from('objects').insert({name,address:$('address').value.trim()||null,deadline:$('deadline').value||null,status:$('status').value}).select('id');
+    if(error)throw error;
+    if(!data?.length)throw new Error('Сервер не подтвердил сохранение объекта.');
+    $('name').value='';$('address').value='';$('deadline').value='';await refresh();
+  }catch(e){message('addMsg','Ошибка сохранения: '+errorText(e))}finally{$('add').disabled=false}
+};
+$('retry').onclick=()=>location.reload();
 try{
-objects=JSON.parse(localStorage.getItem(key)||"[]");
-if(!Array.isArray(objects))objects=[];
-}catch(e){objects=[];}
-function save(){
-localStorage.setItem(key,JSON.stringify(objects));
-render();
-}
-function addObject(){
-const name=document.getElementById("name").value.trim();
-if(!name){
-alert("Введите название объекта");
-return;
-}
-objects.push({
-id:Date.now(),
-name:name,
-address:document.getElementById("address").value,
-deadline:document.getElementById("deadline").value,
-status:document.getElementById("status").value
-});
-save();
-document.getElementById("name").value="";
-document.getElementById("address").value="";
-}
-function removeObject(id){
-if(confirm("Удалить объект?")){
-objects=objects.filter(x=>x.id!==id);
-save();
-}
-}
-function render(){
-const root=document.getElementById("objects");
-root.replaceChildren();
-if(objects.length===0){
-root.textContent="Объекты пока не добавлены";
-return;
-}
-objects.forEach(x=>{
-const div=document.createElement("div");
-div.className="object";
-const title=document.createElement("strong");
-title.textContent=x.name;
-const info=document.createElement("p");
-info.textContent=(x.address||"Адрес не указан")+" — "+x.status;
-const date=document.createElement("small");
-date.textContent="Срок: "+(x.deadline||"не указан");
-const btn=document.createElement("button");
-btn.className="delete";
-btn.textContent="Удалить объект";
-btn.onclick=()=>removeObject(x.id);
-div.append(title,info,date,btn);
-root.append(div);
-});
-}
-render();
-</script>
-</body>
-</html>
+  const {createClient}=await import('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm');
+  supabase=createClient('https://yshhzvcitpeszhavugzn.supabase.co','sb_publishable_geax2_1C3bA_i4AEDIs_kQ_GpUmOuVL');
+  // Defer calls to Supabase until its auth callback releases the auth lock.
+  supabase.auth.onAuthStateChange((event)=>{
+    if(event==='SIGNED_OUT'){sessionVersion++;currentUser=null;hideApp()}
+    else if(['SIGNED_IN','TOKEN_REFRESHED','USER_UPDATED'].includes(event))setTimeout(()=>showSession(),0);
+  });
+  message('loginMsg','');
+  await showSession();
+  $('signIn').disabled=false;
+  if(!$('loginMsg').textContent)message('loginMsg','');
+}catch(e){hideApp();message('loginMsg','Не удалось загрузить подключение Supabase. Проверьте интернет и нажмите «Повторить подключение».');$('retry').classList.remove('hidden')}
+</script></body></html>
