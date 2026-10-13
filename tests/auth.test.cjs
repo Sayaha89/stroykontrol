@@ -14,6 +14,9 @@ class Element {
   replaceChildren() { this.children = []; this.textContent = ''; if(['reportObject','responsible_user_id'].includes(this.id))this.value=''; }
   append(...items) { this.children.push(...items); if(this.id==='reportObject'&&!this.value&&items[0])this.value=items[0].value; }
   addEventListener() {}
+  setAttribute(k,v) {this[k]=v;}
+  showModal() {this.open=true;}
+  close() {this.open=false;}
   scrollIntoView() {}
   focus() {}
   checkValidity() { return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(this.value); }
@@ -93,6 +96,7 @@ async function scenario(mode) {
   if (['access-error', 'denied'].includes(mode)) { assert(el.app.classList.contains('hidden')); assert(el.loginMsg.textContent.includes(mode==='denied'?'не подключён':'доступ')); return; }
   assert(!el.app.classList.contains('hidden'));
   if(mode==='employee'){
+    await el.tabTeam.click();assert(el.teamPane.classList.contains('hidden'));
     assert(el.objectForm.classList.contains('hidden'));assert(el.teamCard.classList.contains('hidden'));
     assert(!el.objects.children[0].children.some(n=>n.textContent==='Редактировать'||n.textContent==='Удалить объект'));
     el.done.value='Отчёт сотрудника';el.reportPhotos.files=[];await el.saveReport.click();assert.equal(reports.length,1);assert.equal(reports[0].author_id,user.id);return;
@@ -120,6 +124,16 @@ async function scenario(mode) {
     el.done.value='Смонтировали 40 м²';el.next_plan.value='Продолжить монтаж';el.problems.value='Нет крепежа';el.reportPhotos.files=mode==='report'?[]:[new Blob(['source'],{type:'image/jpeg'})];
     await el.saveReport.click();assert.equal(reports.length,1);assert.equal(reports[0].author_id,user.id);assert.equal(reports[0].done,'Смонтировали 40 м²');assert.equal(el.done.value,'');assert(el.reportMsg.textContent.includes('сохранён'));if(mode!=='report')assert.equal(uploadCount,1);if(mode==='photo')assert.equal(reports[0].photos.length,1);if(mode==='photo-error'){assert.equal(reports[0].photos.length,0);assert(el.reportMsg.textContent.includes('Не все фото'))}return;
   }
+  if(mode==='ui'){
+    assert(!el.objectsPane.classList.contains('hidden'));assert(el.journalPane.classList.contains('hidden'));
+    await el.tabJournal.click();assert(!el.journalPane.classList.contains('hidden'));assert(el.objectsPane.classList.contains('hidden'));
+    await el.tabTeam.click();assert(!el.teamPane.classList.contains('hidden'));await el.tabObjects.click();
+    await el.newObject.click();assert(el.objectDialog.open);await el.closeObjectForm.click();assert(!el.objectDialog.open);
+    el.objectSearch.value='Не существует';el.objectSearch.oninput();assert(el.objects.children[0].classList.contains('hidden'));assert(!el.filterMsg.classList.contains('hidden'));
+    el.objectSearch.value='Иванов';el.objectSearch.oninput();assert(!el.objects.children[0].classList.contains('hidden'));
+    el.objectFilter.value='Завершён';el.objectFilter.onchange();assert(el.objects.children[0].classList.contains('hidden'));
+    el.objectFilter.value='';el.objectFilter.onchange();assert(!el.objects.children[0].classList.contains('hidden'));return;
+  }
   if(mode==='dates'){el.start_date.value='2026-10-20';el.deadline.value='2026-10-10';el.name.value='Новый';await el.add.click();assert.equal(rows.length,1);assert(el.addMsg.textContent.includes('позже'));return;}
   await button('Удалить объект').click();
   if (mode === 'delete-denied') { assert.equal(rows.length, 1); assert(el.listMsg.textContent.includes('удалить')); }
@@ -127,7 +141,7 @@ async function scenario(mode) {
   await el.signOut.click(); assert(el.app.classList.contains('hidden')); assert.equal(el.objects.children.length, 0);
 }
 (async () => {
-  for (const mode of ['normal', 'access-error', 'denied', 'cdn-error', 'save-error', 'delete-denied', 'email', 'email-error', 'recovery', 'recovery-expired', 'recovery-save-error', 'update', 'update-error', 'update-denied', 'edit-cancel','report','dates','employee','photo','photo-error']) {
+  for (const mode of ['normal', 'access-error', 'denied', 'cdn-error', 'save-error', 'delete-denied', 'email', 'email-error', 'recovery', 'recovery-expired', 'recovery-save-error', 'update', 'update-error', 'update-denied', 'edit-cancel','report','dates','employee','photo','photo-error','ui']) {
     await scenario(mode); console.log(`${mode}: passed`);
   }
 })().catch(e => { console.error(e); process.exitCode = 1; });

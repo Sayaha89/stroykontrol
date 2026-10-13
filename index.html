@@ -1,12 +1,71 @@
 <!doctype html>
 <html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>СтройКонтроль</title>
-<style>*{box-sizing:border-box}body{margin:0;background:#f1f4f8;font:16px Arial,sans-serif;color:#202d40}header{background:#213d6a;color:#fff;padding:26px 18px}h1{margin:0 0 10px;font-size:29px}main{max-width:750px;margin:auto;padding:16px}.card{background:white;border-radius:16px;padding:20px;margin-bottom:16px;box-shadow:0 3px 12px #0001}input,select,textarea,button{width:100%;padding:13px;margin:7px 0;border-radius:9px;font-size:16px;border:1px solid #c7d0dd}button{background:#3266b8;color:white;border:0;font-weight:bold;cursor:pointer}button:disabled{opacity:.5}.danger{background:#ae4646}.muted{color:#637084;font-size:14px}.object{border-top:1px solid #ddd;padding:15px 0}.error{color:#b32626;white-space:pre-wrap}.hidden{display:none}textarea{min-height:90px;resize:vertical}.badge{padding:6px 10px;border-radius:8px;background:#edf2fa;display:inline-block;margin:4px 4px 4px 0;font-size:14px}.bad{background:#fff0ed;color:#ab3020}.good{background:#e5f4e9;color:#26713c}.photos{display:flex;gap:8px;flex-wrap:wrap}.photos img{width:130px;height:100px;object-fit:cover;border-radius:8px}.report{border-top:1px solid #ddd;padding-top:16px;margin-top:16px}.report p{white-space:pre-wrap}</style></head>
-<body><header><h1>🏗️ СтройКонтроль</h1>Управление строительными объектами</header><main>
+<style>
+:root{--ink:#172b45;--muted:#6d7c91;--accent:#117f78;--line:#e1e7ef;--bg:#f3f6fa;--nav:#132d49;--radius:16px}*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:15px -apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;line-height:1.5}button,input,select,textarea{font:inherit}button{cursor:pointer;border:0;border-radius:10px;padding:11px 17px;background:var(--accent);color:#fff;font-weight:600;transition:background .15s}button:hover{filter:brightness(.96)}button:disabled{opacity:.5;cursor:wait}button.secondary{background:#edf2f7;color:var(--ink)}button.danger{background:#fff1ef;color:#b23f32}button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,summary:focus-visible{outline:3px solid #51b7b0;outline-offset:2px}input,select,textarea{width:100%;border:1px solid #d7e0eb;background:#fff;padding:11px 12px;border-radius:9px;color:var(--ink);min-width:0}textarea{min-height:90px;resize:vertical}label{display:block;margin-bottom:6px;font-size:13px;font-weight:600;color:#52647b}input[type=file]{font-size:13px}input[type=file]::file-selector-button{border:0;border-radius:6px;background:#e8f3f2;color:#176861;padding:8px;margin-right:10px}h1,h2,h3,p{overflow-wrap:anywhere}h1,h2,h3{line-height:1.25;margin-top:0}h1{font-size:26px}h2{font-size:20px;margin-bottom:8px}h3{font-size:18px;margin-bottom:10px}p{margin:9px 0}.muted{color:var(--muted);font-size:13px}.error{color:#b32626;white-space:pre-wrap}.hidden{display:none!important}header{max-width:440px;margin:65px auto 25px;padding:0 24px;text-align:center}header h1{margin-bottom:8px}main{padding:0 18px}body:has(#app:not(.hidden)) header{display:none}body:has(#app:not(.hidden)) main{padding:0}.card{background:#fff;border:1px solid var(--line);border-radius:var(--radius);padding:24px;box-shadow:0 4px 18px #142b4504}#login,#recovery{max-width:440px;margin:0 auto 40px}#login input,#recovery input{margin:7px 0 12px}#login button,#recovery button{width:100%;margin:5px 0}#forgot,#backToLogin{background:transparent;color:var(--accent)}#login h2{margin-bottom:20px}#app{min-height:100vh;display:grid;grid-template-columns:230px minmax(0,1fr)}.sidebar{background:var(--nav);color:#fff;padding:28px 18px;position:sticky;top:0;height:100dvh;display:flex;flex-direction:column}.brand{display:flex;gap:10px;align-items:center;padding:0 8px 30px}.brand-icon{font-size:25px;width:43px;height:43px;display:grid;place-items:center;background:#ffffff12;border-radius:12px}.brand strong{font-size:18px;letter-spacing:-.5px}.brand small{display:block;font-size:11px;color:#91abc5}.nav-label{font-size:10px;text-transform:uppercase;letter-spacing:1.5px;color:#91abc5;padding:0 12px;margin-bottom:10px}.navigation{display:flex;flex-direction:column;gap:7px}.navigation button{display:flex;gap:12px;align-items:center;text-align:left;background:transparent;color:#adbed0;border-radius:10px;font-weight:500}.navigation button.selected{background:#ffffff13;color:#fff;box-shadow:inset 3px 0 #4bcbc0}.navigation .nav-icon{font-size:18px;width:22px;text-align:center}.account{margin-top:auto;border-top:1px solid #ffffff16;padding:18px 8px 0;min-width:0}.account summary{cursor:pointer;font-size:13px}.account #who{font-size:11px;color:#adbed0;overflow-wrap:anywhere}.account button{width:100%;margin:6px 0;background:#ffffff10;color:#d5e1ef;font-size:12px;padding:9px}.workspace{padding:34px clamp(20px,3vw,48px) 50px;min-width:0;max-width:1600px;width:100%;margin:0 auto}.page-heading{display:flex;justify-content:space-between;align-items:center;gap:16px;margin-bottom:22px}.eyebrow{color:var(--accent);font-size:11px;text-transform:uppercase;letter-spacing:1.5px;font-weight:700;margin:0 0 8px}.page-heading h1{margin:0 0 8px;font-size:29px}.page-heading p{margin:0}.date-control{max-width:175px;flex-shrink:0}.kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin-bottom:8px}.kpi{padding:20px;background:#fff;border:1px solid var(--line);border-radius:13px}.kpi span{display:block;color:var(--muted);font-size:12px}.kpi strong{display:block;font-size:31px;margin:7px 0 3px;line-height:1.2}.kpi.success strong{color:#237963}.kpi.warning strong{color:#c28521}.kpi.alert strong{color:#bb5847}#summary{margin:9px 1px 24px}.section-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:16px}.section-heading h2{margin:0}.toolbar{display:flex;gap:10px;align-items:center;margin-bottom:18px}.toolbar input{flex:1}.toolbar select{max-width:170px}.toolbar button{white-space:nowrap}#objects{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}.object{border:1px solid var(--line);border-radius:14px;padding:23px;background:#fff;box-shadow:0 5px 18px #172b4503}.object h3{margin-bottom:12px}.object p{font-size:13px;color:#63738a}.object p:nth-of-type(3){color:#28465f;margin:15px 0}.object .badge{display:inline-block;padding:4px 9px;margin:0 5px 8px 0;border-radius:6px;background:#eef2f7;color:#6b7d91;font-size:11px;font-weight:600}.object .badge.good{background:#eaf6ef;color:#367854}.object .badge.bad{background:#fff4e9;color:#9c6a28}.object button{font-size:12px;padding:9px 12px;margin:8px 7px 0 0;display:inline-block}.object button:not(:first-of-type){background:#edf2f7;color:#355168}.object button.danger{background:transparent;color:#b3554b;padding-left:0}.split-layout{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.12fr);gap:22px;align-items:start}.form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:17px}.field{min-width:0}.field.full{grid-column:1/-1}.form-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:22px}.form-actions button{min-width:130px}#reports{max-height:calc(100dvh - 220px);overflow:auto;padding-right:4px}.report{padding:18px 0;border-top:1px solid var(--line)}.report:first-child{border-top:0;padding-top:5px}.report h3{font-size:15px}.report p{font-size:13px;white-space:pre-wrap}.photos{display:flex;gap:8px;flex-wrap:wrap;margin:14px 0}.photos img{width:115px;height:85px;object-fit:cover;border-radius:8px;display:block}.report input[type=file]{margin-top:10px}.report button{margin-top:8px;font-size:12px;padding:9px 12px;background:#edf2f7;color:#355168}#teamList p{padding:16px;background:#f6f8fb;border-radius:10px;margin:0 0 10px;font-size:13px}#employeeMsg,#reportMsg{font-size:13px;overflow-wrap:anywhere}.hint{padding:12px;background:#f3f8f8;border-radius:9px;font-size:12px;color:#5e7c7b;margin:14px 0}.view{animation:appear .15s ease}@keyframes appear{from{opacity:.4;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}dialog{border:0;padding:0;border-radius:18px;max-width:700px;width:calc(100% - 32px);max-height:90dvh;box-shadow:0 28px 100px #132d4940}dialog::backdrop{background:#132d4970}dialog .card{border:0;padding:28px;box-shadow:none}.modal-heading{display:flex;align-items:center;justify-content:space-between;margin-bottom:23px;gap:12px}.modal-heading h2{margin:0}.close-button{background:#edf2f7;color:#596b81;font-size:22px;line-height:1;padding:8px 12px}#cancelEdit{background:#edf2f7;color:#355168}@media(min-width:1500px){#objects{grid-template-columns:repeat(3,minmax(0,1fr))}}@media(max-width:1050px){#app{grid-template-columns:190px minmax(0,1fr)}.sidebar{padding:24px 12px}.brand strong{font-size:16px}.brand-icon{width:35px;height:35px;font-size:20px}.brand{gap:7px;padding-left:0}.workspace{padding:26px 22px}.split-layout{grid-template-columns:1fr}.kpis{gap:10px}.kpi{padding:15px}.kpi span{font-size:11px}#reports{max-height:none}}@media(max-width:700px){#app{display:block}.sidebar{position:sticky;top:0;height:auto;padding:13px 15px 10px;z-index:5;display:grid;grid-template-columns:1fr auto;gap:10px}.brand{padding:0}.brand small,.nav-label{display:none}.brand strong{font-size:17px}.brand-icon{width:32px;height:32px}.navigation{grid-column:1/-1;flex-direction:row;gap:5px}.navigation button{flex:1;justify-content:center;font-size:12px;padding:9px 6px;gap:6px}.navigation button.selected{box-shadow:inset 0 -2px #4bcbc0}.account{grid-row:1;grid-column:2;margin:0;padding:0;border:0;position:relative}.account summary{font-size:12px}.account[open]{position:absolute;right:15px;top:15px;z-index:8;padding:12px;background:var(--nav);border-radius:10px;width:210px;box-shadow:0 10px 40px #0003}.account:not([open]) #who{display:none}.workspace{padding:24px 16px 35px}.page-heading{align-items:flex-start;gap:10px}.page-heading h1{font-size:24px}.page-heading p{font-size:12px}.date-control{max-width:135px}.date-control label{font-size:11px}.date-control input{font-size:12px;padding:9px}.kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.kpi strong{font-size:29px}.toolbar{flex-wrap:wrap}.toolbar input{flex-basis:100%}.toolbar select{max-width:none;flex:1}.toolbar button{font-size:12px;padding:11px 12px}#objects{grid-template-columns:1fr}.card{padding:20px}.object{padding:20px}.split-layout{gap:16px}.form-grid{gap:14px}.form-grid .field{grid-column:1/-1}.section-heading h2{font-size:19px}.section-heading button{font-size:12px;padding:10px 12px}.photos img{width:95px;height:80px}.form-actions button{flex:1}dialog .card{padding:22px}header{margin-top:40px}}
+
+</style></head>
+<body><header><h1>🏗️ СтройКонтроль</h1><p class="muted">Объекты, команда и ежедневные отчёты</p></header><main>
 <section id="login" class="card"><h2>Вход для сотрудников</h2><input id="email" type="email" placeholder="Рабочая почта" autocomplete="email"><input id="password" type="password" placeholder="Пароль" autocomplete="current-password"><button id="signIn" disabled>Войти</button><button id="forgot" type="button" disabled>Забыл пароль</button><p class="muted">Войдите своей рабочей почтой и паролем СтройКонтроля. Если забыли пароль, восстановите его по почте.</p><p id="loginMsg" class="error" role="status" aria-live="polite">Подключение...</p><button id="retry" class="hidden" type="button">Повторить подключение</button></section>
 <section id="recovery" class="card hidden"><h2>Новый пароль</h2><p id="recoveryInfo" class="muted">Проверяем ссылку восстановления...</p><label for="newPassword">Новый пароль, минимум 8 символов</label><input id="newPassword" type="password" autocomplete="new-password"><label for="repeatPassword">Повторите новый пароль</label><input id="repeatPassword" type="password" autocomplete="new-password"><button id="savePassword" disabled>Сохранить пароль</button><p id="recoveryMsg" class="error" role="status" aria-live="polite"></p><button id="backToLogin" type="button">Вернуться ко входу</button></section>
-<div id="app" class="hidden"><section class="card"><p id="who" class="muted"></p><button id="changePassword" type="button">Изменить мой пароль</button><button id="signOut">Выйти</button></section><section class="card"><h2>Ежедневный контроль</h2><label for="controlDate">Дата контроля</label><input id="controlDate" type="date"><p id="summary" class="muted"></p></section><section class="card"><h2>Мои объекты</h2><button id="reload" type="button">Обновить список</button><div id="objects">Загрузка...</div><p id="listMsg" class="error"></p></section><section id="objectForm" class="card adminOnly"><h2 id="formTitle">Добавить объект</h2><label for="name">Название объекта</label><input id="name" placeholder="Название объекта"><label for="address">Адрес объекта</label><input id="address" placeholder="Адрес объекта"><label for="responsible">Ответственный</label><input id="responsible" placeholder="ФИО ответственного"><label for="start_date">Дата начала</label><input id="start_date" type="date"><label for="responsible_user_id">Доступ сотрудника к объекту</label><select id="responsible_user_id"><option value="">Не назначен</option></select><label for="deadline">Срок завершения</label><input id="deadline" type="date"><label for="status">Статус</label><select id="status"><option>Не начат</option><option>В работе</option><option>Приостановлен</option><option>Завершён</option></select><button id="add">Добавить объект</button><button id="cancelEdit" type="button" class="hidden">Отменить редактирование</button><p id="addMsg" class="error"></p></section>
-<section class="card" id="journal"><h2>Ежедневный журнал</h2><label for="reportObject">Объект</label><select id="reportObject"></select><label for="reportDate">Дата отчёта</label><input id="reportDate" type="date"><label for="done">Что сделали сегодня</label><textarea id="done" placeholder="Объём и результат работ"></textarea><label for="next_plan">План на следующий рабочий день</label><textarea id="next_plan"></textarea><label for="problems">Проблемы и препятствия</label><textarea id="problems"></textarea><label for="needs">Какое решение нужно от руководителя</label><textarea id="needs"></textarea><label for="reportPhotos">Фотографии</label><input id="reportPhotos" type="file" accept="image/*" multiple><p class="muted">До 8 фотографий за одну загрузку. Крупные фото уменьшаются перед отправкой.</p><button id="saveReport">Отправить отчёт</button><p id="reportMsg" role="status" aria-live="polite"></p><div id="reports"></div></section>
-<section id="teamCard" class="card adminOnly"><h2>Сотрудники</h2><p class="muted">Создайте вход сотрудника, затем назначьте его на объект. Передайте ему почту и начальный пароль лично.</p><label for="employeeName">ФИО</label><input id="employeeName"><label for="employeeEmail">Почта сотрудника</label><input id="employeeEmail" type="email"><label for="employeePassword">Начальный пароль, минимум 12 символов</label><input id="employeePassword" type="password" autocomplete="new-password"><button id="createEmployee">Создать сотрудника</button><p id="employeeMsg" class="error" role="status"></p><div id="teamList"></div></section></div>
+<div id="app" class="hidden">
+ <aside class="sidebar">
+  <div class="brand"><span class="brand-icon" aria-hidden="true">▦</span><div><strong>СтройКонтроль</strong><small>РАБОТА ПОД КОНТРОЛЕМ</small></div></div>
+  <div class="nav-label">Рабочее пространство</div>
+  <nav class="navigation" aria-label="Разделы приложения">
+   <button id="tabObjects" aria-controls="objectsPane" class="selected" aria-pressed="true"><span class="nav-icon" aria-hidden="true">▦</span>Объекты</button>
+   <button id="tabJournal" aria-controls="journalPane" aria-pressed="false"><span class="nav-icon" aria-hidden="true">▤</span>Журнал</button>
+   <button id="tabTeam" aria-controls="teamPane" class="adminOnly" aria-pressed="false"><span class="nav-icon" aria-hidden="true">♙</span>Сотрудники</button>
+  </nav>
+  <details class="account"><summary>Мой аккаунт</summary><p id="who"></p><button id="changePassword" type="button">Изменить пароль</button><button id="signOut">Выйти</button></details>
+ </aside>
+ <div class="workspace">
+  <section id="objectsPane" class="view">
+   <div class="page-heading"><div><p class="eyebrow">Ежедневный контроль</p><h1>Мои объекты</h1><p class="muted">Работы, сроки и отчёты в одном месте</p></div><div class="date-control"><label for="controlDate">Дата контроля</label><input id="controlDate" type="date"></div></div>
+   <div class="kpis" aria-label="Сводка по объектам"><div class="kpi"><span>Активных объектов</span><strong id="kpiActive">—</strong></div><div class="kpi success"><span>С отчётом</span><strong id="kpiReported">—</strong></div><div class="kpi warning"><span>Без отчёта</span><strong id="kpiMissing">—</strong></div><div class="kpi alert"><span>Срок просрочен</span><strong id="kpiLate">—</strong></div></div>
+   <p id="summary" class="muted"></p>
+   <div class="section-heading"><h2>Объекты и ответственные</h2><button id="newObject" class="adminOnly">+ Добавить объект</button></div>
+   <div class="toolbar"><input id="objectSearch" type="search" placeholder="Найти по названию, адресу или ответственному" aria-label="Поиск объекта"><select id="objectFilter" aria-label="Фильтр статуса"><option value="">Все статусы</option><option>Не начат</option><option>В работе</option><option>Приостановлен</option><option>Завершён</option></select><button id="reload" class="secondary">↻ Обновить</button></div>
+   <div id="objects">Загрузка...</div><p id="filterMsg" class="muted hidden">По этому запросу объектов нет.</p><p id="listMsg" class="error" role="status"></p>
+  </section>
+  <section id="journalPane" class="view hidden">
+   <div class="page-heading"><div><p class="eyebrow">Ход работ</p><h1>Журнал объекта</h1><p class="muted">Отправляйте отчёты и смотрите историю работ</p></div></div>
+   <div id="journal" class="split-layout">
+    <section class="card"><h2>Новый отчёт</h2><p class="muted">Зафиксируйте результат рабочего дня</p><div class="form-grid" style="margin-top:20px">
+     <div class="field"><label for="reportObject">Объект</label><select id="reportObject"></select></div><div class="field"><label for="reportDate">Дата отчёта</label><input id="reportDate" type="date"></div>
+     <div class="field full"><label for="done">Что сделали сегодня</label><textarea id="done" placeholder="Например: смонтировали 40 м² кровли"></textarea></div>
+     <div class="field full"><label for="next_plan">План на следующий рабочий день</label><textarea id="next_plan" placeholder="Что и в каком объёме планируете выполнить"></textarea></div>
+     <div class="field"><label for="problems">Проблемы и препятствия</label><textarea id="problems" placeholder="Что мешает работе"></textarea></div>
+     <div class="field"><label for="needs">Нужно решение руководителя</label><textarea id="needs" placeholder="Какое решение и к какому сроку"></textarea></div>
+     <div class="field full"><label for="reportPhotos">Фотографии выполненных работ</label><input id="reportPhotos" type="file" accept="image/*" multiple><p class="muted">До 8 фото за загрузку. Крупные снимки уменьшаются автоматически.</p></div>
+    </div><div class="form-actions"><button id="saveReport">Отправить отчёт</button></div><p id="reportMsg" role="status" aria-live="polite"></p></section>
+    <section class="card"><h2>История отчётов</h2><p class="muted">Последние 20 отчётов выбранного объекта</p><div id="reports"></div></section>
+   </div>
+  </section>
+  <section id="teamPane" class="view hidden">
+   <div class="page-heading"><div><p class="eyebrow">Команда</p><h1>Сотрудники</h1><p class="muted">Учётные записи и доступ к работе на объектах</p></div></div>
+   <div id="teamCard" class="split-layout adminOnly">
+    <section class="card"><h2>Добавить сотрудника</h2><p class="muted">Создайте вход, затем назначьте сотрудника в карточке объекта.</p><div class="form-grid" style="margin-top:20px">
+     <div class="field full"><label for="employeeName">ФИО</label><input id="employeeName" placeholder="Фамилия Имя Отчество"></div>
+     <div class="field full"><label for="employeeEmail">Почта сотрудника</label><input id="employeeEmail" type="email" placeholder="name@example.ru"></div>
+     <div class="field full"><label for="employeePassword">Начальный пароль</label><input id="employeePassword" type="password" autocomplete="new-password" placeholder="Минимум 12 символов"></div>
+    </div><p class="hint">Передайте сотруднику почту и начальный пароль лично. Он входит по той же ссылке, что и вы.</p><div class="form-actions"><button id="createEmployee">Создать сотрудника</button></div><p id="employeeMsg" class="error" role="status"></p></section>
+    <section class="card"><h2>Ваша команда</h2><p class="muted">Выбирайте этих сотрудников при назначении на объект</p><div id="teamList"></div></section>
+   </div>
+  </section>
+ </div>
+ <dialog id="objectDialog" aria-labelledby="formTitle"><section id="objectForm" class="card adminOnly">
+  <div class="modal-heading"><h2 id="formTitle">Добавить объект</h2><button id="closeObjectForm" class="close-button" type="button" aria-label="Закрыть форму">×</button></div>
+  <div class="form-grid">
+   <div class="field full"><label for="name">Название объекта</label><input id="name" placeholder="Например: Совхозная, 50"></div>
+   <div class="field full"><label for="address">Адрес объекта</label><input id="address" placeholder="Адрес объекта"></div>
+   <div class="field"><label for="responsible">Ответственный</label><input id="responsible" placeholder="ФИО ответственного"></div>
+   <div class="field"><label for="responsible_user_id">Доступ сотрудника</label><select id="responsible_user_id"><option value="">Не назначен</option></select></div>
+   <div class="field"><label for="start_date">Дата начала</label><input id="start_date" type="date"></div>
+   <div class="field"><label for="deadline">Срок завершения</label><input id="deadline" type="date"></div>
+   <div class="field full"><label for="status">Статус работ</label><select id="status"><option>Не начат</option><option>В работе</option><option>Приостановлен</option><option>Завершён</option></select></div>
+  </div><div class="form-actions"><button id="add">Добавить объект</button><button id="cancelEdit" type="button" class="hidden">Отменить редактирование</button></div><p id="addMsg" class="error" role="status"></p>
+ </section></dialog>
+</div>
 </main><noscript>Для работы приложения включите JavaScript в браузере.</noscript><script type="module">
 const $=id=>document.getElementById(id);
 function message(id,text){$(id).textContent=text||''}
@@ -22,6 +81,7 @@ function errorText(e){
 }
 let supabase=null, currentUser=null, accessAllowed=false, sessionVersion=0, listVersion=0;
 let editingId=null,isAdmin=false,team=[],objectRows=[],dailyRows=[],journalVersion=0;
+let currentView="objects",objectCards=[];
 const initialParams=new URLSearchParams(location.search);
 const initialHash=new URLSearchParams(location.hash.slice(1));
 let recovering=initialParams.get('recovery')==='1'||initialHash.get('type')==='recovery';
@@ -66,10 +126,28 @@ $('savePassword').onclick=async()=>{
     message('loginMsg','Пароль сохранён.');await showSession();
   }catch(e){message('recoveryMsg','Ошибка сохранения пароля: '+errorText(e))}finally{$('savePassword').disabled=false}
 };
+function selectView(view){
+ if(view==='team'&&!isAdmin)view='objects';
+ currentView=view;
+ for(const [key,tab] of [['objects','tabObjects'],['journal','tabJournal'],['team','tabTeam']]){
+  $(key+'Pane').classList.toggle('hidden',key!==view);$(tab).classList.toggle('selected',key===view);$(tab).setAttribute('aria-pressed',String(key===view));
+ }
+}
+$('tabObjects').onclick=()=>selectView('objects');$('tabJournal').onclick=()=>selectView('journal');$('tabTeam').onclick=()=>selectView('team');
+$('newObject').onclick=()=>{if(!isAdmin)return;resetObjectForm();$('objectDialog').showModal();$('name').focus()};
+$('closeObjectForm').onclick=()=>{if(!$('add').disabled)resetObjectForm()};
+$('objectDialog').addEventListener('cancel',event=>{event.preventDefault();if(!$('add').disabled)resetObjectForm()});
+function applyObjectFilter(){
+ const query=$('objectSearch').value.trim().toLocaleLowerCase('ru'),status=$('objectFilter').value;let visible=0;
+ for(const card of objectCards){const shown=(!query||card.search.includes(query))&&(!status||card.status===status);card.element.classList.toggle('hidden',!shown);if(shown)visible++}
+ $('filterMsg').classList.toggle('hidden',visible>0||!objectCards.length);
+}
+$('objectSearch').oninput=applyObjectFilter;$('objectFilter').onchange=applyObjectFilter;
 function today(){return new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Irkutsk',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date())}
 $('controlDate').value=today();$('reportDate').value=today();
 function node(tag,text,className){const n=document.createElement(tag);if(text)n.textContent=text;if(className)n.className=className;return n}
 function resetObjectForm(){
+ if($('objectDialog').open)$('objectDialog').close();
  editingId=null;for(const id of ['name','address','responsible','deadline','start_date','responsible_user_id'])$(id).value='';
  $('status').value='Не начат';$('formTitle').textContent='Добавить объект';$('add').textContent='Добавить объект';$('cancelEdit').classList.add('hidden');message('addMsg','');
 }
@@ -77,14 +155,14 @@ function editObject(o){
  if(!isAdmin||$('add').disabled)return;editingId=o.id;
  for(const id of ['name','address','responsible','deadline','start_date','responsible_user_id'])$(id).value=o[id]||'';
  const status=o.status||'Не начат';if(!Array.from($('status').options).some(x=>x.value===status)){const option=node('option',status);option.value=status;$('status').append(option)}
- $('status').value=status;$('formTitle').textContent='Редактировать объект';$('add').textContent='Сохранить изменения';$('cancelEdit').classList.remove('hidden');message('addMsg','');$('objectForm').scrollIntoView({behavior:'smooth',block:'start'});
+ $('status').value=status;$('formTitle').textContent='Редактировать объект';$('add').textContent='Сохранить изменения';$('cancelEdit').classList.remove('hidden');message('addMsg','');if(!$('objectDialog').open)$('objectDialog').showModal();$('name').focus();
 }
 $('cancelEdit').onclick=()=>{if(!$('add').disabled)resetObjectForm()};
 $('controlDate').onchange=()=>{if($('controlDate').value)refresh()};
 $('reportObject').onchange=loadJournal;
 $('responsible_user_id').onchange=()=>{const member=team.find(m=>m.user_id===$('responsible_user_id').value);if(member)$('responsible').value=member.full_name};
 function hideApp(){
- resetObjectForm();accessAllowed=false;isAdmin=false;listVersion++;journalVersion++;objectRows=[];dailyRows=[];team=[];
+ resetObjectForm();objectCards=[];$('objectSearch').value='';$('objectFilter').value='';selectView('objects');accessAllowed=false;isAdmin=false;listVersion++;journalVersion++;objectRows=[];dailyRows=[];team=[];
  $('login').classList.remove('hidden');$('app').classList.add('hidden');for(const id of ['objects','reports','teamList'])$(id).replaceChildren();$('who').textContent='';
  for(const id of ['done','next_plan','problems','needs','reportPhotos','employeePassword'])$(id).value='';
 }
@@ -101,22 +179,24 @@ async function refresh(){
   const active=objectRows.filter(o=>o.status!=='Завершён');
   const reported=o=>dailyRows.some(r=>r.object_id===o.id&&(!o.responsible_user_id||r.author_id===o.responsible_user_id));
   const reportCount=active.filter(reported).length;
+  $('kpiActive').textContent=String(active.length);$('kpiReported').textContent=String(reportCount);$('kpiMissing').textContent=String(active.length-reportCount);$('kpiLate').textContent=String(active.filter(o=>o.deadline&&o.deadline<$('controlDate').value).length);
   $('summary').textContent=`Активных объектов: ${active.length}. Отчитались: ${reportCount}. Без отчёта: ${active.length-reportCount}.`;
   const oldAssignment=$('responsible_user_id').value;$('responsible_user_id').replaceChildren();const empty=node('option','Не назначен');empty.value='';$('responsible_user_id').append(empty);
   for(const m of team){const opt=node('option',m.full_name+' — '+m.email);opt.value=m.user_id;$('responsible_user_id').append(opt)}$('responsible_user_id').value=oldAssignment;
   $('teamList').replaceChildren();for(const m of team)$('teamList').append(node('p',m.full_name+' — '+m.email));
   const selected=$('reportObject').value;$('reportObject').replaceChildren();for(const o of objectRows){const opt=node('option',o.name);opt.value=String(o.id);$('reportObject').append(opt)}if(objectRows.some(o=>String(o.id)===selected))$('reportObject').value=selected;
   $('saveReport').disabled=!objectRows.length;$('objects').replaceChildren();if(!objectRows.length)$('objects').textContent='Объекты пока не назначены или не добавлены';
+  objectCards=[];
   for(const o of objectRows){
    const wrap=node('div',null,'object');wrap.append(node('h3',o.name||'Без названия'),node('p',[o.address,o.status].filter(Boolean).join(' — ')),node('p','Начало: '+(o.start_date||'не указано')+' · Срок: '+(o.deadline||'не указан'),'muted'),node('p','Ответственный: '+(o.responsible||'не назначен')));
    wrap.append(node('span',reported(o)?'Отчёт есть':'Нет отчёта',reported(o)?'badge good':'badge bad'));
    if(o.deadline&&o.deadline<$('controlDate').value&&o.status!=='Завершён')wrap.append(node('span','Срок просрочен','badge bad'));
    if(dailyRows.some(r=>r.object_id===o.id&&(r.problems.trim()||r.needs.trim())))wrap.append(node('span','Нужна помощь','badge bad'));
-   const journal=node('button','Отчёты и фото');journal.onclick=()=>{$('reportObject').value=String(o.id);loadJournal();$('journal').scrollIntoView({behavior:'smooth',block:'start'})};wrap.append(journal);
+   const journal=node('button','Отчёты и фото');journal.onclick=()=>{selectView('journal');$('reportObject').value=String(o.id);loadJournal();$('journal').scrollIntoView({behavior:'smooth',block:'start'})};wrap.append(journal);
    if(isAdmin){const edit=node('button','Редактировать');edit.onclick=()=>editObject(o);const del=node('button','Удалить объект','danger');del.onclick=async()=>{if(!confirm('Удалить объект «'+o.name+'»?'))return;del.disabled=true;try{const {data,error}=await supabase.from('objects').delete().eq('id',o.id).select('id');if(error)throw error;if(!data.length)throw Error('Не удалось удалить объект');if(editingId===o.id)resetObjectForm();await refresh()}catch(e){message('listMsg',errorText(e))}finally{del.disabled=false}};wrap.append(edit,del)}
-   $('objects').append(wrap);
+   $('objects').append(wrap);objectCards.push({element:wrap,status:o.status,search:[o.name,o.address,o.responsible].filter(Boolean).join(' ').toLocaleLowerCase('ru')});
   }
-  await loadJournal();
+  applyObjectFilter();await loadJournal();
  }catch(e){if(version===listVersion){$('objects').textContent='Не удалось загрузить объекты';message('listMsg',errorText(e))}}
 }
 async function loadJournal(){
@@ -164,7 +244,7 @@ async function showSession(){
     isAdmin=!!admin;
     if(!isAdmin){const {data:member,error:memberError}=await supabase.from('team_members').select('user_id').eq('user_id',currentUser.id).maybeSingle();if(memberError)throw memberError;if(!member){hideApp();message('loginMsg','Аккаунт не подключён к команде. Обратитесь к руководителю.');return}}
     for(const section of document.querySelectorAll('.adminOnly'))section.classList.toggle('hidden',!isAdmin);
-    accessAllowed=true; message('loginMsg','');
+    accessAllowed=true;selectView(currentView);message('loginMsg','');
     $('login').classList.add('hidden'); $('app').classList.remove('hidden');
     $('who').textContent='Вы вошли: '+currentUser.email; await refresh();
   }catch(e){if(version===sessionVersion){hideApp();message('loginMsg','Ошибка проверки доступа: '+errorText(e))}}
