@@ -101,6 +101,7 @@ async function scenario(mode) {
     assert(!el.objects.children[0].children.some(n=>n.textContent==='Редактировать'||n.textContent==='Удалить объект'));
     el.done.value='Отчёт сотрудника';el.reportPhotos.files=[];await el.saveReport.click();assert.equal(reports.length,1);assert.equal(reports[0].author_id,user.id);return;
   }
+  if(mode==='manager-report')el.responsible_user_id.value='another-employee';
   el.name.value = '<script>alert(1)</script>'; el.responsible.value = 'Иванов Иван'; await el.add.click();
   if (mode === 'save-error') { assert(el.addMsg.textContent.length>0); assert.equal(el.name.value, '<script>alert(1)</script>'); assert(!el.add.disabled); return; }
   assert.equal(el.objects.children[0].children[0].textContent, '<script>alert(1)</script>');
@@ -120,9 +121,9 @@ async function scenario(mode) {
     button('Редактировать').click(); el.responsible.value = ''; await el.add.click(); assert.equal(rows[0].responsible, null);
     assert.equal(el.formTitle.textContent, 'Добавить объект'); assert(el.cancelEdit.classList.contains('hidden'));
   }
-  if(['report','photo','photo-error'].includes(mode)){
-    el.done.value='Смонтировали 40 м²';el.next_plan.value='Продолжить монтаж';el.problems.value='Нет крепежа';el.reportPhotos.files=mode==='report'?[]:[new Blob(['source'],{type:'image/jpeg'})];
-    await el.saveReport.click();assert.equal(reports.length,1);assert.equal(reports[0].author_id,user.id);assert.equal(reports[0].done,'Смонтировали 40 м²');assert.equal(el.done.value,'');assert(el.reportMsg.textContent.includes('сохранён'));if(mode!=='report')assert.equal(uploadCount,1);if(mode==='photo')assert.equal(reports[0].photos.length,1);if(mode==='photo-error'){assert.equal(reports[0].photos.length,0);assert(el.reportMsg.textContent.includes('Не все фото'))}return;
+  if(['report','photo','photo-error','manager-report'].includes(mode)){
+    el.done.value='Смонтировали 40 м²';el.next_plan.value='Продолжить монтаж';el.problems.value='Нет крепежа';el.reportPhotos.files=['report','manager-report'].includes(mode)?[]:[new Blob(['source'],{type:'image/jpeg'})];
+    await el.saveReport.click();assert.equal(reports.length,1);assert.equal(reports[0].author_id,user.id);assert.equal(reports[0].done,'Смонтировали 40 м²');assert.equal(el.done.value,'');assert(el.reportMsg.textContent.includes('сохранён'));if(['photo','photo-error'].includes(mode))assert.equal(uploadCount,1);if(mode==='manager-report'){assert.equal(el.kpiReported.textContent,'1');assert(el.objects.children[0].children.some(n=>n.textContent.includes('Отчёт за')&&n.textContent.endsWith('есть')));assert(el.objects.children[0].children.some(n=>n.textContent==='Ответственный ещё не отчитался'));}if(mode==='photo')assert.equal(reports[0].photos.length,1);if(mode==='photo-error'){assert.equal(reports[0].photos.length,0);assert(el.reportMsg.textContent.includes('Не все фото'))}return;
   }
   if(mode==='ui'){
     assert(!el.objectsPane.classList.contains('hidden'));assert(el.journalPane.classList.contains('hidden'));
@@ -141,7 +142,7 @@ async function scenario(mode) {
   await el.signOut.click(); assert(el.app.classList.contains('hidden')); assert.equal(el.objects.children.length, 0);
 }
 (async () => {
-  for (const mode of ['normal', 'access-error', 'denied', 'cdn-error', 'save-error', 'delete-denied', 'email', 'email-error', 'recovery', 'recovery-expired', 'recovery-save-error', 'update', 'update-error', 'update-denied', 'edit-cancel','report','dates','employee','photo','photo-error','ui']) {
+  for (const mode of ['normal', 'access-error', 'denied', 'cdn-error', 'save-error', 'delete-denied', 'email', 'email-error', 'recovery', 'recovery-expired', 'recovery-save-error', 'update', 'update-error', 'update-denied', 'edit-cancel','report','dates','employee','photo','photo-error','ui','manager-report']) {
     await scenario(mode); console.log(`${mode}: passed`);
   }
 })().catch(e => { console.error(e); process.exitCode = 1; });

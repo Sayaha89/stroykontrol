@@ -177,10 +177,12 @@ async function refresh(){
   for(const r of results)if(r.error)throw r.error;if(version!==listVersion||!accessAllowed)return;
   objectRows=results[0].data;dailyRows=results[1].data;team=results[2].data;
   const active=objectRows.filter(o=>o.status!=='Завершён');
-  const reported=o=>dailyRows.some(r=>r.object_id===o.id&&(!o.responsible_user_id||r.author_id===o.responsible_user_id));
+  const reported=o=>dailyRows.some(r=>String(r.object_id)===String(o.id));
+  const responsibleReported=o=>!o.responsible_user_id||dailyRows.some(r=>String(r.object_id)===String(o.id)&&r.author_id===o.responsible_user_id);
+  const controlLabel=$('controlDate').value.split('-').reverse().join('.');
   const reportCount=active.filter(reported).length;
   $('kpiActive').textContent=String(active.length);$('kpiReported').textContent=String(reportCount);$('kpiMissing').textContent=String(active.length-reportCount);$('kpiLate').textContent=String(active.filter(o=>o.deadline&&o.deadline<$('controlDate').value).length);
-  $('summary').textContent=`Активных объектов: ${active.length}. Отчитались: ${reportCount}. Без отчёта: ${active.length-reportCount}.`;
+  $('summary').textContent=`Активных объектов: ${active.length}. С отчётом: ${reportCount}. Без отчёта: ${active.length-reportCount}.`;
   const oldAssignment=$('responsible_user_id').value;$('responsible_user_id').replaceChildren();const empty=node('option','Не назначен');empty.value='';$('responsible_user_id').append(empty);
   for(const m of team){const opt=node('option',m.full_name+' — '+m.email);opt.value=m.user_id;$('responsible_user_id').append(opt)}$('responsible_user_id').value=oldAssignment;
   $('teamList').replaceChildren();for(const m of team)$('teamList').append(node('p',m.full_name+' — '+m.email));
@@ -189,7 +191,8 @@ async function refresh(){
   objectCards=[];
   for(const o of objectRows){
    const wrap=node('div',null,'object');wrap.append(node('h3',o.name||'Без названия'),node('p',[o.address,o.status].filter(Boolean).join(' — ')),node('p','Начало: '+(o.start_date||'не указано')+' · Срок: '+(o.deadline||'не указан'),'muted'),node('p','Ответственный: '+(o.responsible||'не назначен')));
-   wrap.append(node('span',reported(o)?'Отчёт есть':'Нет отчёта',reported(o)?'badge good':'badge bad'));
+   wrap.append(node('span',reported(o)?'Отчёт за '+controlLabel+' есть':'Нет отчёта за '+controlLabel,reported(o)?'badge good':'badge bad'));
+   if(reported(o)&&!responsibleReported(o))wrap.append(node('span','Ответственный ещё не отчитался','badge'));
    if(o.deadline&&o.deadline<$('controlDate').value&&o.status!=='Завершён')wrap.append(node('span','Срок просрочен','badge bad'));
    if(dailyRows.some(r=>r.object_id===o.id&&(r.problems.trim()||r.needs.trim())))wrap.append(node('span','Нужна помощь','badge bad'));
    const journal=node('button','Отчёты и фото');journal.onclick=()=>{selectView('journal');$('reportObject').value=String(o.id);loadJournal();$('journal').scrollIntoView({behavior:'smooth',block:'start'})};wrap.append(journal);
@@ -280,7 +283,7 @@ $('saveReport').onclick=async()=>{
  const fields=['saveReport','reportObject','reportDate','done','next_plan','problems','needs','reportPhotos'];for(const f of fields)$(f).disabled=true;let saved=false;
  try{
   const payload={object_id,author_id:currentUser.id,report_date,done,next_plan:$('next_plan').value.trim(),problems:$('problems').value.trim(),needs:$('needs').value.trim()};
-  const {data,error}=await supabase.from('daily_reports').insert(payload).select('*').single();if(error)throw error;if(!data)throw Error('Отчёт не сохранён');saved=true;
+  const {data,error}=await supabase.from('daily_reports').insert(payload).select('*').single();if(error)throw error;if(!data)throw Error('Отчёт не сохранён');saved=true;$('controlDate').value=report_date;
   if(files.length)await attachPhotos(data,files);message('reportMsg','Отчёт сохранён'+(files.length?' с фотографиями':''));
  }catch(e){message('reportMsg',(saved?'Текст отчёта сохранён. Не все фото прикреплены: ':'Ошибка сохранения: ')+errorText(e))}
  finally{if(saved){for(const id of ['done','next_plan','problems','needs','reportPhotos'])$(id).value='';await refresh()}for(const f of fields)$(f).disabled=false;$('saveReport').disabled=!objectRows.length}
